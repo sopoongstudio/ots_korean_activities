@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>에이든 이모 대화 연습</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#1f7a5c; --tealDark:#175f47; --mint:#eaf3ef; --ink:#1f2a26; --sub:#6b7b74;
+    --page:#ffffff; --line:#e7ece9; --cream:#FDF3E6; --creamLine:#E9C99A; --creamText:#8A5A1F;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:"Noto Sans KR",sans-serif;padding:28px 20px 60px}
+  .outer{max-width:1280px;margin:0 auto;display:flex;gap:36px;align-items:flex-start}
+  .wrap{flex:1;min-width:0;max-width:760px}
+  .side{width:440px;flex-shrink:0;visibility:hidden}
+  .sideFixed{position:fixed;top:50%;transform:translateY(-50%);width:440px}
+  .sideFixed img{width:100%;border-radius:20px;display:block;opacity:.92;box-shadow:0 8px 24px rgba(31,42,38,.12)}
+  .sideFixed.hidden{display:none}
+  @media(max-width:1320px){
+    .sideFixed{position:static;transform:none;width:100%;margin:0 auto 20px}
+    .side{display:none}
+  }
+  @media(max-width:980px){
+    .outer{flex-direction:column}
+  }
+
+  .badgeRow{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .badge{background:var(--teal);color:#fff;font-weight:700;font-size:12px;letter-spacing:.04em;padding:6px 14px;border-radius:8px}
+  .title{font-size:26px;font-weight:700;color:#333;margin:6px 0 2px}
+  .titleEn{font-size:15px;color:var(--sub);font-style:italic;margin-bottom:8px}
+  .hint{font-size:14px;color:var(--sub);margin-bottom:2px}
+  .hintEn{font-size:12px;color:#a7b2ac;font-style:italic;margin-bottom:18px}
+
+
+  .tabs{display:flex;gap:8px;margin-bottom:26px;border-bottom:2px solid var(--line)}
+  .tab{padding:10px 18px;font-size:15px;font-weight:700;color:var(--sub);cursor:pointer;border-bottom:3px solid transparent;user-select:none}
+  .tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+  .panel{display:none}
+  .panel.active{display:block}
+
+  .row{display:flex;margin-bottom:14px}
+  .row.right{justify-content:flex-end}
+  .row.left{justify-content:flex-start}
+
+  /* static bubble: both KR+EN together, not clickable */
+  .staticBubble{max-width:85%;width:85%;border-radius:14px;padding:16px 22px}
+  .left .staticBubble{background:var(--mint);color:var(--ink)}
+  .speaker{font-size:11px;font-weight:700;opacity:.85;display:block;margin-bottom:4px}
+  .left .speaker{color:#4f6a5f}
+  .kr{font-size:18px;font-weight:700;display:block}
+  .en{font-size:15px;font-weight:500;opacity:.85;display:block;margin-top:4px}
+
+  /* flip card: Aidan's lines in 대화카드 tab. front = English, back = Korean */
+  .flip{width:85%;max-width:620px;height:86px;perspective:1000px;cursor:pointer}
+  .flipInner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+  .flip.flipped .flipInner{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;border-radius:14px;padding:14px 22px;display:flex;flex-direction:column;justify-content:center;gap:4px;backface-visibility:hidden;background:var(--teal);color:#fff}
+  .face.back{transform:rotateY(180deg)}
+  .face .en{font-size:17px;font-weight:700;opacity:1;margin:0}
+  .face .kr{font-size:18px;font-weight:700}
+
+  /* practice tab: Aidan cue card — English on top, blanked Korean underneath, no click needed */
+  .cueCard{width:85%;max-width:620px;margin-left:auto;border-radius:14px;padding:16px 22px;background:var(--cream);border:2px solid var(--creamLine);margin-bottom:14px}
+  .cueCard .speaker{color:var(--creamText)}
+  .cueCard .en{font-size:16px;font-weight:700;color:var(--creamText);font-style:italic;display:block;margin-bottom:8px}
+  .cueCard .blank{font-size:18px;font-weight:700;color:var(--ink);display:block}
+  .cueCard .blankMark{display:inline-block;min-width:80px;border-bottom:2px dashed #C9A46B;text-align:center;cursor:pointer;color:transparent;transition:color .15s}
+  .cueCard .blankMark.revealed{color:var(--teal);font-weight:700;border-bottom-color:var(--teal)}
+  .cueCard .roman{display:block;margin-top:6px;font-size:13px;font-style:italic;color:#a88a56}
+
+
+  /* aunt flip cards: front = Listen only, back = Korean (+English on dialogue tab) */
+  .flip.aunt{width:85%;max-width:620px;height:96px}
+  .flip.aunt.krOnly{height:76px}
+  .flip.aunt .face{background:var(--mint);color:var(--ink);border:2px solid #cfe2d9}
+  .flip.aunt .face.front{align-items:flex-start}
+  .flip.aunt .speaker{color:#4f6a5f}
+  .flip.aunt .listen{font-size:20px;font-weight:700;color:var(--teal);letter-spacing:.02em}
+  .flip.aunt .face .en{font-size:15px;font-weight:500;opacity:.85;color:var(--ink);margin-top:2px}
+  @media(max-width:520px){ .flip.aunt{width:100%} }
+  /* romanization is a hint: hidden until clicked */
+  .cueCard .roman{cursor:pointer;user-select:none}
+  .cueCard .roman.hide{position:relative;display:inline-block;color:transparent;background:#f1e3c8;border-radius:6px;padding:0 8px}
+  .cueCard .roman.hide::after{content:'hint';position:absolute;left:0;right:0;text-align:center;color:#a88a56;font-style:normal;font-size:12px;font-weight:700}
+
+  .staticFull{max-width:85%;background:var(--mint);color:var(--ink);border-radius:14px;padding:16px 22px}
+  .staticFull .speaker{color:#4f6a5f}
+  .staticFull .kr{font-size:18px;font-weight:700}
+
+  /* TAB 3: 쓰기 연습 - Hangul tracing grid, matches the printed worksheet: gray guide
+     character next to its own empty box, side by side, with a notebook-style dashed
+     crosshair inside every box so the student can trace/write right on screen */
+  .writeRow{display:flex;align-items:center;gap:22px;margin-bottom:22px;flex-wrap:wrap}
+  .writeLabel{width:150px;flex-shrink:0}
+  .writeLabel .enWord{font-size:17px;font-weight:700;color:var(--creamText)}
+  .writeLabel .roman{display:block;font-size:13px;color:var(--sub);font-style:italic;margin-top:2px}
+  .writeBoxes{display:flex;gap:28px;flex-wrap:wrap;align-items:center}
+  .traceGroup,.writeGroup{display:flex;gap:6px}
+  .wbox{width:62px;height:62px;position:relative;border:2px solid #cfd6d1;border-radius:6px;background:#fff;flex-shrink:0}
+  .wbox::before{content:'';position:absolute;top:50%;left:3px;right:3px;border-top:1px dashed #dfe5e1}
+  .wbox::after{content:'';position:absolute;left:50%;top:3px;bottom:3px;border-left:1px dashed #dfe5e1}
+  .wbox .guide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:#d7dcd8;font-family:"Noto Sans KR",sans-serif}
+  @media(max-width:520px){ .wbox{width:52px;height:52px} .wbox .guide{font-size:25px} .writeLabel{width:120px} }
+
+  @media(max-width:520px){
+    .kr{font-size:16px} .en{font-size:14px}
+    .flip,.staticBubble,.cueCard{width:100%}
+  }
+  /* chalkboard overlay: freehand drawing layer usable on every tab */
+  #board{position:fixed;inset:0;z-index:80;pointer-events:none;cursor:default}
+  #board.active{pointer-events:auto;cursor:crosshair}
+  .boardBtn{position:fixed;right:22px;bottom:22px;z-index:90;background:var(--teal);color:#fff;border:none;border-radius:24px;padding:12px 20px;font-family:"Noto Sans KR",sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(31,42,38,.22)}
+  .boardBtn.on{background:#c0392b}
+  .boardBtn.small{position:static;padding:8px 16px;font-size:12px;box-shadow:none}
+  .boardTools{position:fixed;right:22px;bottom:78px;z-index:90;display:none;align-items:center;gap:8px;background:#fff;border-radius:24px;padding:8px 12px;box-shadow:0 4px 14px rgba(31,42,38,.18)}
+  .boardTools.show{display:flex}
+  .boardColor{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;display:inline-block}
+  .boardColor.picked{border-color:#1f2a26}
+</style>
+</head>
+<body>
+<div class="outer">
+<div class="wrap">
+
+  <div class="badgeRow"><span class="badge">DIALOGUE</span></div>
+  <div class="title">오늘의 대화 - 전화통화하기</div>
+  <div class="titleEn">Today's Dialogue - Making a Phone Call</div>
+  <div class="hint">카드는 클릭하면 뒤집혀요 / 빈칸을 클릭하면 답이 나와요 / 로마자는 힌트예요</div>
+  <div class="hintEn">Click a card to flip it / click a blank to see the answer / romanization is a hint</div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="dialogue">대화 카드</div>
+    <div class="tab" data-tab="practice">말하기 연습</div>
+    <div class="tab" data-tab="write">쓰기 연습</div>
+  </div>
+
+  <!-- TAB 1: 이모 = static KR+EN together (no flip). 에이든 = flip card, front EN, back KR -->
+  <div class="panel active" id="panel-dialogue">
+
+    <div class="row right">
+      <div class="flip" onclick="this.classList.toggle('flipped')">
+        <div class="flipInner">
+          <div class="face front"><span class="speaker">학생</span><span class="en">Hello, Aunt, it's me.</span></div>
+          <div class="face back"><span class="speaker">학생</span><span class="kr">여보세요, 이모 저예요.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row right">
+      <div class="flip" onclick="this.classList.toggle('flipped')">
+        <div class="flipInner">
+          <div class="face front"><span class="speaker">학생</span><span class="en">How have you been?</span></div>
+          <div class="face back"><span class="speaker">학생</span><span class="kr">잘 지내시죠?</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row left">
+      <div class="flip aunt" onclick="this.classList.toggle('flipped')">
+        <div class="flipInner">
+          <div class="face front"><span class="speaker">이모</span><span class="listen">🎧 Listen</span></div>
+          <div class="face back"><span class="speaker">이모</span><span class="kr">ㅇㅇ 잘 지내. 학교는 어때?</span><span class="en">Yeah, I'm well. How's school?</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row right">
+      <div class="flip" onclick="this.classList.toggle('flipped')">
+        <div class="flipInner">
+          <div class="face front"><span class="speaker">학생</span><span class="en">I'm in 9th grade now.</span></div>
+          <div class="face back"><span class="speaker">학생</span><span class="kr">저는 이제 9학년이에요.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row right">
+      <div class="flip" onclick="this.classList.toggle('flipped')">
+        <div class="flipInner">
+          <div class="face front"><span class="speaker">학생</span><span class="en">I'm busy these days because of exams.</span></div>
+          <div class="face back"><span class="speaker">학생</span><span class="kr">시험이라 요즘 바빠요.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row left">
+      <div class="flip aunt" onclick="this.classList.toggle('flipped')">
+        <div class="flipInner">
+          <div class="face front"><span class="speaker">이모</span><span class="listen">🎧 Listen</span></div>
+          <div class="face back"><span class="speaker">이모</span><span class="kr">고생이네. 엄마 말씀 잘 듣고 밥 잘 먹어.</span><span class="en">That's tough. Listen to your mom and eat well.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row right">
+      <div class="flip" onclick="this.classList.toggle('flipped')">
+        <div class="flipInner">
+          <div class="face front"><span class="speaker">학생</span><span class="en">Okay Aunt, I'll put my mom on.</span></div>
+          <div class="face back"><span class="speaker">학생</span><span class="kr">네 이모. 엄마 바꿔드릴게요.</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB 2: 이모 = full Korean shown. 에이든 = English cue on top + blanked Korean scaffold below -->
+  <div class="panel" id="panel-practice">
+
+    <div class="cueCard">
+      <span class="speaker">학생</span>
+      <span class="en">Hello, Aunt, it's me.</span>
+      <span class="blank"><span class="blankMark" data-answer="여보세요">여보세요</span>, 이모 저예요.</span>
+      <span class="roman hide">Yeoboseyo, imo jeoyeyo.</span>
+    </div>
+
+    <div class="cueCard">
+      <span class="speaker">학생</span>
+      <span class="en">How have you been?</span>
+      <span class="blank">잘 <span class="blankMark" data-answer="지내시죠">지내시죠</span>?</span>
+      <span class="roman hide">Jal jinaesijyo?</span>
+    </div>
+
+    <div class="row left">
+      <div class="flip aunt krOnly" onclick="this.classList.toggle('flipped')">
+        <div class="flipInner">
+          <div class="face front"><span class="speaker">이모</span><span class="listen">🎧 Listen</span></div>
+          <div class="face back"><span class="speaker">이모</span><span class="kr">ㅇㅇ 잘 지내. 학교는 어때?</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cueCard">
+      <span class="speaker">학생</span>
+      <span class="en">I'm in 9th grade now.</span>
+      <span class="blank">저는 이제 <span class="blankMark" data-answer="9학년">9학년</span>이에요.</span>
+      <span class="roman hide">Jeoneun ije guhangnyeon-ieyo.</span>
+    </div>
+
+    <div class="cueCard">
+      <span class="speaker">학생</span>
+      <span class="en">I'm busy these days because of exams.</span>
+      <span class="blank"><span class="blankMark" data-answer="시험">시험</span>이라 요즘 <span class="blankMark" data-answer="바빠요">바빠요</span>.</span>
+      <span class="roman hide">Siheomira yojeum bappayo.</span>
+    </div>
+
+    <div class="row left">
+      <div class="flip aunt krOnly" onclick="this.classList.toggle('flipped')">
+        <div class="flipInner">
+          <div class="face front"><span class="speaker">이모</span><span class="listen">🎧 Listen</span></div>
+          <div class="face back"><span class="speaker">이모</span><span class="kr">고생이네. 엄마 말씀 잘 듣고 밥 잘 먹어.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cueCard">
+      <span class="speaker">학생</span>
+      <span class="en">Okay Aunt, I'll put my mom on.</span>
+      <span class="blank">네 이모. 엄마 <span class="blankMark" data-answer="바꿔드릴게요">바꿔드릴게요</span>.</span>
+      <span class="roman hide">Ne imo. Eomma bakkwodeurilkkeyo.</span>
+    </div>
+
+  </div>
+
+  <!-- TAB 3: 쓰기 연습 - trace the gray guide character, then write it again in the empty box -->
+  <div class="panel" id="panel-write">
+
+    <div class="writeRow">
+      <div class="writeLabel"><span class="enWord">Mom</span><span class="roman">eomma</span></div>
+      <div class="writeBoxes">
+        <div class="traceGroup"><div class="wbox"><span class="guide">엄</span></div><div class="wbox"><span class="guide">마</span></div></div>
+        <div class="writeGroup"><div class="wbox"></div><div class="wbox"></div></div>
+      </div>
+    </div>
+
+    <div class="writeRow">
+      <div class="writeLabel"><span class="enWord">Aunt</span><span class="roman">imo</span></div>
+      <div class="writeBoxes">
+        <div class="traceGroup"><div class="wbox"><span class="guide">이</span></div><div class="wbox"><span class="guide">모</span></div></div>
+        <div class="writeGroup"><div class="wbox"></div><div class="wbox"></div></div>
+      </div>
+    </div>
+
+    <div class="writeRow">
+      <div class="writeLabel"><span class="enWord">Swimming</span><span class="roman">suyeong</span></div>
+      <div class="writeBoxes">
+        <div class="traceGroup"><div class="wbox"><span class="guide">수</span></div><div class="wbox"><span class="guide">영</span></div></div>
+        <div class="writeGroup"><div class="wbox"></div><div class="wbox"></div></div>
+      </div>
+    </div>
+
+    <div class="writeRow">
+      <div class="writeLabel"><span class="enWord">School</span><span class="roman">hakgyo</span></div>
+      <div class="writeBoxes">
+        <div class="traceGroup"><div class="wbox"><span class="guide">학</span></div><div class="wbox"><span class="guide">교</span></div></div>
+        <div class="writeGroup"><div class="wbox"></div><div class="wbox"></div></div>
+      </div>
+    </div>
+
+    <div class="writeRow">
+      <div class="writeLabel"><span class="enWord">Go (polite)</span><span class="roman">gayo</span></div>
+      <div class="writeBoxes">
+        <div class="traceGroup"><div class="wbox"><span class="guide">가</span></div><div class="wbox"><span class="guide">요</span></div></div>
+        <div class="writeGroup"><div class="wbox"></div><div class="wbox"></div></div>
+      </div>
+    </div>
+
+    <div class="writeRow">
+      <div class="writeLabel"><span class="enWord">Do (polite)</span><span class="roman">haeyo</span></div>
+      <div class="writeBoxes">
+        <div class="traceGroup"><div class="wbox"><span class="guide">해</span></div><div class="wbox"><span class="guide">요</span></div></div>
+        <div class="writeGroup"><div class="wbox"></div><div class="wbox"></div></div>
+      </div>
+    </div>
+
+    <div class="writeRow">
+      <div class="writeLabel"><span class="enWord">To give</span><span class="roman">juda</span></div>
+      <div class="writeBoxes">
+        <div class="traceGroup"><div class="wbox"><span class="guide">주</span></div><div class="wbox"><span class="guide">다</span></div></div>
+        <div class="writeGroup"><div class="wbox"></div><div class="wbox"></div></div>
+      </div>
+    </div>
+
+    <div class="writeRow">
+      <div class="writeLabel"><span class="enWord">To give (honorific)</span><span class="roman">deurida</span></div>
+      <div class="writeBoxes">
+        <div class="traceGroup"><div class="wbox"><span class="guide">드</span></div><div class="wbox"><span class="guide">리</span></div><div class="wbox"><span class="guide">다</span></div></div>
+        <div class="writeGroup"><div class="wbox"></div><div class="wbox"></div><div class="wbox"></div></div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="side"></div>
+<div class="sideFixed" id="sideFixed"><img src="call_illustration.png" alt="영상통화 일러스트"></div>
+</div>
+
+<canvas id="board"></canvas>
+
+<button id="boardToggle" class="boardBtn">칠판 켜기</button>
+<div id="boardTools" class="boardTools">
+  <span class="boardColor picked" data-color="#1f7a5c" style="background:#1f7a5c"></span>
+  <span class="boardColor" data-color="#c0392b" style="background:#c0392b"></span>
+  <span class="boardColor" data-color="#2a56b2" style="background:#2a56b2"></span>
+  <span class="boardColor" data-color="#111111" style="background:#111111"></span>
+  <button id="boardClear" class="boardBtn small">지우기</button>
+</div>
+
+<script>
+  function positionSide(){
+    var side = document.querySelector('.side');
+    var fixed = document.getElementById('sideFixed');
+    if (getComputedStyle(fixed).position === 'fixed') {
+      var rect = side.getBoundingClientRect();
+      fixed.style.left = rect.left + 'px';
+    } else {
+      fixed.style.left = '';
+    }
+  }
+  window.addEventListener('resize', positionSide);
+  window.addEventListener('load', positionSide);
+  positionSide();
+
+  // hide the illustration only on the 쓰기 연습 (write) tab so there's full open space to write
+  function updateSideVisibility(activeTabName){
+    var fixed = document.getElementById('sideFixed');
+    if (!fixed) return;
+    fixed.classList.toggle('hidden', activeTabName === 'write');
+  }
+
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      updateSideVisibility(tab.dataset.tab);
+      clearBoard();
+    });
+  });
+
+  // 말하기 연습 tab: click a blank to reveal its answer
+  document.querySelectorAll('.blankMark').forEach(function(b){
+    b.addEventListener('click', function(){
+      b.classList.toggle('revealed');
+    });
+  });
+
+  // 말하기 연습 tab: romanization is a hint, click to show/hide
+  document.querySelectorAll('.cueCard .roman').forEach(function(r){
+    r.addEventListener('click', function(){ r.classList.toggle('hide'); });
+  });
+
+  // ---- chalkboard: freehand drawing overlay, usable on every tab ----
+  var board = document.getElementById('board');
+  var ctx = board.getContext('2d');
+  var drawing = false, boardOn = false, penColor = '#1f7a5c';
+
+  function resizeBoard(){
+    var strokes = board.toDataURL();
+    board.width = window.innerWidth;
+    board.height = window.innerHeight;
+    var img = new Image();
+    img.onload = function(){ ctx.drawImage(img, 0, 0); };
+    img.src = strokes;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = penColor;
+  }
+  window.addEventListener('resize', resizeBoard);
+  resizeBoard();
+
+  function getPos(e){
+    var t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX, y: t.clientY };
+  }
+  function startDraw(e){
+    if (!boardOn) return;
+    drawing = true;
+    var p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    e.preventDefault();
+  }
+  function moveDraw(e){
+    if (!boardOn || !drawing) return;
+    var p = getPos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    e.preventDefault();
+  }
+  function endDraw(){ drawing = false; }
+  board.addEventListener('mousedown', startDraw);
+  board.addEventListener('mousemove', moveDraw);
+  window.addEventListener('mouseup', endDraw);
+  board.addEventListener('touchstart', startDraw, { passive: false });
+  board.addEventListener('touchmove', moveDraw, { passive: false });
+  board.addEventListener('touchend', endDraw);
+
+  function clearBoard(){ ctx.clearRect(0, 0, board.width, board.height); }
+
+  var boardToggleBtn = document.getElementById('boardToggle');
+  var boardClearBtn = document.getElementById('boardClear');
+  var boardColorBtns = document.querySelectorAll('.boardColor');
+
+  function setBoardOn(on){
+    boardOn = on;
+    board.classList.toggle('active', on);
+    boardToggleBtn.classList.toggle('on', on);
+    boardToggleBtn.textContent = on ? '칠판 끄기' : '칠판 켜기';
+    document.getElementById('boardTools').classList.toggle('show', on);
+  }
+  boardToggleBtn.addEventListener('click', function(){ setBoardOn(!boardOn); });
+  boardClearBtn.addEventListener('click', clearBoard);
+  boardColorBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      penColor = btn.dataset.color;
+      ctx.strokeStyle = penColor;
+      boardColorBtns.forEach(function(b){ b.classList.remove('picked'); });
+      btn.classList.add('picked');
+    });
+  });
+</script>
+</body>
+</html>

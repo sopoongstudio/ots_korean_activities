@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>친거인사 · 수업 칠판</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef2f0; --board:#f8faf9; --ink:#1f2a26; --muted:#7d8a84; --line:#c9d3ce;
+  --pink:#d23d63; --mint:#178a5e; --yellow:#b07f00; --tab:#e1e8e4; --blue:#1f6fd1;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#18221e; --board:#22302b; --ink:#eef3ee; --muted:#8fa39a; --line:#3a4d45;
+  --pink:#ff8fa3; --mint:#86e0b5; --yellow:#f6d56b; --tab:#2c3c36; --blue:#6fb3ff; } }
+:root[data-theme="dark"]{
+  --bg:#18221e; --board:#22302b; --ink:#eef3ee; --muted:#8fa39a; --line:#3a4d45;
+  --pink:#ff8fa3; --mint:#86e0b5; --yellow:#f6d56b; --tab:#2c3c36; --blue:#6fb3ff; }
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Gowun Dodum","Malgun Gothic",sans-serif}
+.wrap{max-width:1240px;height:100%;margin:0 auto;padding:14px 18px 18px;display:flex;flex-direction:column;gap:12px}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.tabs,.tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+button{font-family:Jua,"Malgun Gothic",sans-serif;font-size:18px;border:0;border-radius:10px;background:var(--tab);color:var(--ink);padding:8px 14px;cursor:pointer}
+.tabs button[aria-current="true"]{background:var(--ink);color:var(--board)}
+.tools button[aria-pressed="true"]{background:var(--yellow);color:var(--board)}
+.swatch{width:30px;height:30px;padding:0;border-radius:50%;border:3px solid transparent}
+.swatch[aria-pressed="true"]{border-color:var(--ink)}
+button:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.board{position:relative;flex:1;min-height:520px;background:var(--board);border-radius:22px;padding:clamp(20px,3vw,40px);overflow:auto}
+.cue{position:relative;z-index:6;font-family:"Gowun Dodum","Malgun Gothic",sans-serif;font-size:clamp(13px,1.4vw,16px);color:var(--muted);margin:0 0 12px}
+.rows{position:relative;z-index:6;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;flex-direction:column;gap:4px;padding-bottom:8px;border-bottom:1px dashed var(--line)}
+.rows>.row:last-child{border-bottom:0}
+.en{font-family:"Gowun Dodum","Malgun Gothic",sans-serif;font-size:clamp(13px,1.3vw,15px);color:var(--yellow);margin-bottom:-2px}
+.korline{font-family:Jua,"Malgun Gothic",sans-serif;font-size:clamp(17px,2vw,22px);display:flex;flex-wrap:wrap;align-items:baseline;gap:.15em;margin-top:0}
+.slot{display:inline-block;min-width:2.6em;text-align:center;border-bottom:4px dashed var(--muted);border-radius:8px 8px 0 0;padding:0 .1em;color:var(--ink)}
+.slot.correct{color:var(--mint);border-bottom-color:var(--mint);background:color-mix(in srgb,var(--mint) 12%,transparent);border-radius:10px}
+.slot.wrong{color:var(--pink);border-bottom-color:var(--pink);background:color-mix(in srgb,var(--pink) 12%,transparent);border-radius:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:Jua,"Malgun Gothic",sans-serif;font-size:15px;padding:4px 13px;border-radius:999px;border:2px solid var(--blue);color:var(--blue);background:transparent;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--blue);color:var(--board)}
+.dlgrow{flex-direction:row;align-items:flex-start;gap:10px}
+.speaker{flex:0 0 44px;font-family:Jua,"Malgun Gothic",sans-serif;font-size:clamp(12px,1.3vw,14px);color:var(--muted);padding-top:2px}
+.dlgbody{display:flex;flex-direction:row;flex-wrap:wrap;align-items:baseline;column-gap:10px;row-gap:2px}
+.given,.blank{font-family:Jua,"Malgun Gothic",sans-serif;font-size:clamp(17px,2vw,22px)}
+.blank{pointer-events:auto;display:inline-block;cursor:pointer;border:0;background:none;padding:0;color:inherit;text-align:left}
+.blank .ans{min-width:8em;padding:0 .2em;border-bottom:3px dashed var(--muted);color:transparent;border-radius:8px 8px 0 0;transition:background .2s;display:inline-block}
+.blank:hover .ans{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.blank.open .ans{color:var(--mint);border-bottom-color:transparent;background:color-mix(in srgb,var(--mint) 14%,transparent);border-radius:12px}
+.match{position:relative;z-index:6}
+.matchWrap{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:clamp(16px,4vw,60px);padding:18px 0 8px}
+.col{position:relative;z-index:2;display:flex;flex-direction:column;gap:10px}
+.col.mid{align-items:center;min-width:140px;gap:10px}
+.mchip{--c:var(--blue);font-family:Jua,"Malgun Gothic",sans-serif;font-size:clamp(16px,1.8vw,20px);padding:8px 16px;border-radius:12px;border:3px solid var(--c);color:var(--c);background:var(--board);cursor:pointer;min-width:88px;text-align:center}
+.mchip[aria-pressed="true"]{background:var(--c);color:#fff}
+#nounsCol .mchip:nth-child(1),#verbsCol .mchip:nth-child(1){--c:#e64a5c}
+#nounsCol .mchip:nth-child(2),#verbsCol .mchip:nth-child(2){--c:#3b7bdb}
+#nounsCol .mchip:nth-child(3),#verbsCol .mchip:nth-child(3){--c:#1fa38a}
+#nounsCol .mchip:nth-child(4),#verbsCol .mchip:nth-child(4){--c:#e0a415}
+#nounsCol .mchip:nth-child(5),#verbsCol .mchip:nth-child(5){--c:#8b5cf6}
+.conn{font-family:Jua,"Malgun Gothic",sans-serif;font-size:clamp(26px,3.2vw,36px);color:var(--pink);min-height:1em}
+.assembled{font-family:Jua,"Malgun Gothic",sans-serif;font-size:clamp(28px,3.8vw,44px);min-height:1.4em;text-align:center;padding:4px 20px;border-radius:16px;background:color-mix(in srgb,var(--pink) 10%,transparent)}
+.assembled.correct{background:color-mix(in srgb,var(--mint) 16%,transparent);color:var(--mint)}
+.target{display:table;font-family:Jua,"Malgun Gothic",sans-serif;font-size:clamp(20px,2.4vw,26px);color:var(--blue);background:color-mix(in srgb,var(--blue) 12%,transparent);border:3px solid var(--blue);border-radius:14px;padding:10px 18px;margin:26px auto 6px}
+.nextBtn{display:block;margin:32px auto 0;font-size:15px;padding:8px 16px}
+canvas{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
+.pen canvas{pointer-events:auto;cursor:crosshair}
+#content{pointer-events:none}
+#content button{pointer-events:auto}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <nav class="tabs" id="tabs" aria-label="Scenes"></nav>
+    <div class="tools">
+      <button id="penBtn" aria-pressed="true" title="P">✏️ 펜</button>
+      <button class="swatch" data-c="--ink" aria-label="White pen"></button>
+      <button class="swatch" data-c="--yellow" aria-label="Yellow pen"></button>
+      <button class="swatch" data-c="--pink" aria-label="Pink pen"></button>
+      <button class="swatch" data-c="--mint" aria-label="Green pen"></button>
+      <button id="undoBtn" title="Z">↶ 되돌리기</button>
+      <button id="clearBtn" title="C">🧽 지우기</button>
+      <button id="resetBtn" title="R">↺ 처음부터</button>
+      <button id="themeBtn" aria-label="Switch theme">◐</button>
+    </div>
+  </header>
+  <main class="board pen" id="board">
+    <div id="content"></div>
+    <canvas id="ink"></canvas>
+  </main>
+</div>
+<script>
+/* Pattern A/B: 영어 먼저 보여주고 -> 단어은행 클릭하면 빈칸에 그 단어가 들어감 -> 학생이 한국어 문장을 읽음
+   실전 대화: 영어 먼저 보여주고 -> 에이든 대사는 클릭해서 정답 확인, 할머니 대사는 그대로 표시 */
+const NOUNS=['새해','생신','명절','연휴','추석'];
+const NOUN_EN={'새해':'New Year','생신':'his/her birthday','명절':'the holiday','연휴':'the long weekend','추석':'Chuseok'};
+const VERBS=[
+ {kr:'바빴어요',en:'I was busy'},
+ {kr:'못 갔어요',en:"I couldn't go"},
+ {kr:'늦었어요',en:'I was late'},
+ {kr:'연락드렸어요',en:'I contacted them'},
+ {kr:'전화드렸어요',en:'I called'}
+];
+function hasBatchim(w){ const c=w.charCodeAt(w.length-1)-0xAC00; if(c<0||c>11171) return true; return (c%28)!==0; }
+const TARGETS=NOUNS.flatMap(n=>VERBS.map(v=>({noun:n,verb:v.kr,en:v.en+' because it was '+NOUN_EN[n]+'.'})));
+let target=null;
+function pickTarget(){ let t; do{ t=TARGETS[Math.floor(Math.random()*TARGETS.length)]; } while(target&&t.noun===target.noun&&t.verb===target.verb); target=t; }
+const scenes=[
+ {tab:'패턴 A',cue:'Read the English, say it in Korean, then click the right word to check.',
+  items:[
+   {en:'Have a great New Year, stay healthy',suffix:'잘 보내시고 건강하세요',correct:'새해'},
+   {en:'Have a great birthday, stay healthy',suffix:'잘 보내시고 건강하세요',correct:'생신'},
+   {en:'Have a great holiday, stay healthy',suffix:'잘 보내시고 건강하세요',correct:'명절'},
+   {en:'Have a great long weekend, stay healthy',suffix:'잘 보내시고 건강하세요',correct:'연휴'},
+   {en:'Have a great Chuseok, stay healthy',suffix:'잘 보내시고 건강하세요',correct:'추석'}
+  ]},
+ {tab:'패턴 B',cue:'Pick a noun, then pick a reason. Watch the connector change, then read the full sentence.',match:true},
+ {tab:'실전 대화',cue:'Read the English, say it in Korean, then click to check.',dlg:[
+   {who:'에이든',line:'안녕하세요 할머니',en:'Hello, Grandma',blank:true},
+   {who:'에이든',line:'추석이라 연락드렸어요',en:"I'm calling because it's Chuseok",blank:true},
+   {who:'에이든',line:'추석 잘 보내시고 건강하세요',en:'Have a great Chuseok, stay healthy',blank:true},
+   {who:'할머니',line:'어~ 너도 건강하게 지내',en:'Oh, you stay healthy too',blank:false},
+   {who:'에이든',line:'네, 감사합니다',en:'Thank you',blank:true},
+   {who:'할머니',line:'그래 또 연락해',en:'Okay, call again',blank:false},
+   {who:'에이든',line:'네, 들어가세요~',en:'Okay, bye',blank:true}
+  ]}
+];
+const $=id=>document.getElementById(id);
+let si=0;
+function render(){
+  $('tabs').innerHTML='';
+  scenes.forEach((s,i)=>{const b=document.createElement('button');b.textContent=s.tab;b.setAttribute('aria-current',i===si);b.onclick=()=>goScene(i);$('tabs').appendChild(b);});
+  const s=scenes[si];
+  let html=`<p class="cue">${s.cue}</p><div class="rows">`;
+  if(s.items){
+    html+=s.items.map(it=>`<div class="row">
+      <p class="en">${it.en}</p>
+      <p class="korline"><span class="slot" data-correct="${it.correct}">&nbsp;</span>${it.suffix}</p>
+      <div class="chips">${NOUNS.map(w=>`<button class="chip" data-w="${w}">${w}</button>`).join('')}</div>
+    </div>`).join('');
+  } else if(s.dlg){
+    html+=s.dlg.map(d=>`<div class="row dlgrow"><span class="speaker">${d.who}</span><div class="dlgbody">
+      <p class="en">${d.en}</p>
+      ${d.blank ? `<button class="blank" aria-label="Show answer"><span class="ans">${d.line}</span></button>` : `<p class="given">${d.line}</p>`}
+    </div></div>`).join('');
+  } else if(s.match){
+    pickTarget();
+    html='<div class="match"><p class="en">'+s.cue+'</p>'
+      +'<div class="target" id="targetBox">'+target.en+'</div>'
+      +'<div class="matchWrap" id="matchWrap">'
+      +`<div class="col" id="nounsCol">${NOUNS.map(w=>`<button class="mchip" data-side="n" data-w="${w}">${w}</button>`).join('')}</div>`
+      +'<div class="col mid"><span class="conn" id="connLabel">&nbsp;</span><p class="assembled" id="assembled">&nbsp;</p></div>'
+      +`<div class="col" id="verbsCol">${VERBS.map(v=>`<button class="mchip" data-side="v" data-w="${v.kr}">${v.kr}</button>`).join('')}</div>`
+      +'</div><button class="nextBtn" id="nextBtn">↻ New sentence</button></div>';
+    $('content').innerHTML=html;
+    $('nextBtn').onclick=()=>{ pickTarget(); $('targetBox').textContent=target.en; selN=null; selV=null; wasCorrect=false; document.querySelectorAll('.mchip').forEach(x=>x.removeAttribute('aria-pressed')); updateMatch(); };
+    wireMatch();
+    return;
+  }
+  html+='</div>';
+  $('content').innerHTML=html;
+  document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+    const row=c.closest('.row'), slot=row.querySelector('.slot'), w=c.dataset.w, correct=slot.dataset.correct;
+    row.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed', x===c));
+    slot.textContent=w;
+    slot.classList.remove('correct','wrong');
+    slot.classList.add(w===correct?'correct':'wrong');
+  });
+  document.querySelectorAll('.blank').forEach(b=>b.onclick=()=>{
+    const open=b.classList.toggle('open');
+    if(open&&!matchMedia('(prefers-reduced-motion: reduce)').matches)
+      b.querySelector('.ans').animate([{transform:'scale(.7)',opacity:.2},{transform:'scale(1)',opacity:1}],{duration:380,easing:'cubic-bezier(.3,1.5,.5,1)'});
+  });
+}
+function goScene(i){ if(i<0||i>=scenes.length) return; si=i; strokes=strokesByScene[si]||(strokesByScene[si]=[]); redraw(); render(); }
+
+let selN=null, selV=null, wasCorrect=false;
+function fireConfetti(container){
+  if(!container) return;
+  const emojis=['🎉','✨','🎊','⭐','🥳'];
+  for(let i=0;i<24;i++){
+    const s=document.createElement('span');
+    s.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    s.style.cssText='position:absolute;left:50%;top:50%;font-size:22px;line-height:1;pointer-events:none;z-index:50;';
+    container.appendChild(s);
+    const angle=Math.random()*Math.PI*2, dist=60+Math.random()*90;
+    const dx=Math.cos(angle)*dist, dy=Math.sin(angle)*dist-40, rot=(Math.random()*360-180);
+    const anim=s.animate([
+      {transform:'translate(-50%,-50%) scale(.5) rotate(0deg)',opacity:1},
+      {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(1.15) rotate(${rot}deg)`,opacity:0}
+    ],{duration:900,easing:'ease-out'});
+    anim.onfinish=()=>s.remove();
+  }
+}
+function wireMatch(){
+  selN=null; selV=null; wasCorrect=false;
+  document.querySelectorAll('.mchip').forEach(c=>c.onclick=()=>{
+    if(c.dataset.side==='n'){ selN=c.dataset.w; document.querySelectorAll('#nounsCol .mchip').forEach(x=>x.setAttribute('aria-pressed', x===c)); }
+    else { selV=c.dataset.w; document.querySelectorAll('#verbsCol .mchip').forEach(x=>x.setAttribute('aria-pressed', x===c)); }
+    updateMatch();
+  });
+  updateMatch();
+}
+function updateMatch(){
+  const conn=$('connLabel'), asm=$('assembled');
+  if(selN){ conn.textContent = hasBatchim(selN)?'이라':'라'; } else { conn.textContent='\u00a0'; }
+  asm.classList.remove('correct');
+  if(selN&&selV){
+    asm.textContent = selN + conn.textContent + ' ' + selV;
+    const nowCorrect = target && selN===target.noun && selV===target.verb;
+    if(nowCorrect){
+      asm.classList.add('correct');
+      if(!wasCorrect) fireConfetti(asm.parentElement);
+    }
+    wasCorrect=nowCorrect;
+  } else {
+    asm.textContent='\u00a0';
+    wasCorrect=false;
+  }
+}
+
+const cv=$('ink'), ctx=cv.getContext('2d');
+let strokesByScene={0:[]}, strokes=strokesByScene[0], cur=null, penVar='--yellow';
+const col=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function size(){ const r=cv.getBoundingClientRect(), d=devicePixelRatio||1; cv.width=r.width*d; cv.height=r.height*d; ctx.setTransform(d,0,0,d,0,0); redraw(); }
+function drawStroke(s){ if(s.p.length<1) return; ctx.strokeStyle=col(s.c); ctx.lineWidth=5; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.beginPath(); ctx.moveTo(s.p[0][0],s.p[0][1]); s.p.forEach(([x,y])=>ctx.lineTo(x,y)); ctx.stroke(); }
+function redraw(){ ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,cv.width,cv.height); ctx.restore(); strokes.forEach(drawStroke); }
+const pos=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);cur={c:penVar,p:[pos(e)]};strokes.push(cur);});
+cv.addEventListener('pointermove',e=>{if(!cur)return;cur.p.push(pos(e));const n=cur.p.length;ctx.strokeStyle=col(cur.c);ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(...cur.p[n-2]);ctx.lineTo(...cur.p[n-1]);ctx.stroke();});
+const end=()=>cur=null; cv.addEventListener('pointerup',end); cv.addEventListener('pointercancel',end);
+function togglePen(){ const on=!$('board').classList.contains('pen'); $('board').classList.toggle('pen',on); $('penBtn').setAttribute('aria-pressed',on); }
+function setColor(v){ penVar=v; document.querySelectorAll('.swatch').forEach(s=>s.setAttribute('aria-pressed',s.dataset.c===v)); if(!$('board').classList.contains('pen')) togglePen(); }
+document.querySelectorAll('.swatch').forEach(s=>{s.style.background=`var(${s.dataset.c})`;s.onclick=()=>setColor(s.dataset.c);});
+$('penBtn').onclick=togglePen;
+$('undoBtn').onclick=()=>{strokes.pop();redraw();};
+$('clearBtn').onclick=()=>{strokes.length=0;redraw();};
+$('resetBtn').onclick=()=>{strokes.length=0;redraw();render();};
+$('themeBtn').onclick=()=>{const r=document.documentElement;const dark=col('--board')==='#22302b';r.dataset.theme=dark?'light':'dark';redraw();};
+addEventListener('resize',size);
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='BUTTON'&&(e.key===' '||e.key==='Enter')) return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();goScene(si+1);}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();goScene(si-1);}
+  else if(e.key==='p'||e.key==='P') togglePen();
+  else if(e.key==='c'||e.key==='C'){strokes.length=0;redraw();}
+  else if(e.key==='z'||e.key==='Z'){strokes.pop();redraw();}
+  else if(e.key==='r'||e.key==='R'){strokes.length=0;redraw();render();}
+});
+setColor('--ink'); render(); size();
+</script>
+</body>
+</html>
