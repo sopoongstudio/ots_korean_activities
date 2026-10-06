@@ -154,7 +154,6 @@ main{max-width:1100px;margin:0 auto;padding:22px 16px 90px}
 .qrbox{max-width:520px}
 #qrimg{background:#fff;padding:8px;border-radius:12px;width:min(78vw,420px);margin:0 auto}
 #qrimg svg{width:100%;height:auto;display:block}
-.qrurl{margin-top:12px;font-size:14px;color:var(--gray);word-break:break-all}
 .netbar{position:fixed;top:0;left:0;right:0;z-index:70;background:var(--pink);color:#fff;text-align:center;padding:8px 12px;font-weight:700;font-size:14px;display:none}
 .netbar.on{display:block}
 #studentApp{display:none}
@@ -273,7 +272,7 @@ body.student-mode .top,body.student-mode main,body.student-mode #modal,body.stud
 
 <!-- QR -->
 <div class="modal" id="qrmodal" onclick="if(event.target===this)closeQR()">
-  <div class="mbox qrbox"><button class="mclose" onclick="closeQR()">×</button><h3>Scan with your phone</h3><div id="qrimg"></div><div class="qrurl" id="qrurl"></div></div>
+  <div class="mbox qrbox"><button class="mclose" onclick="closeQR()">×</button><h3>Scan with your phone</h3><div id="qrimg"></div></div>
 </div>
 
 <!-- PEN -->
@@ -2682,7 +2681,6 @@ function showQR(){
   const url=studentLink();
   const q=qrcode(0,'M');q.addData(url);q.make();
   document.getElementById('qrimg').innerHTML=q.createSvgTag({cellSize:8,margin:4,scalable:true});
-  document.getElementById('qrurl').textContent=url;
   document.getElementById('qrmodal').classList.add('on');
 }
 function closeQR(){document.getElementById('qrmodal').classList.remove('on');}
