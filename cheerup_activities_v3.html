@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cheer Up Practice</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<style>
+:root{
+  --teal:#1AB5B0;--teal-d:#0E8C88;--teal-l:#E0F7F6;
+  --pink:#E8618C;--pink-l:#FDE8EF;
+  --orange:#E07B45;--orange-l:#FDEEE4;
+  --purple:#7B68AE;--purple-l:#EEEAF7;
+  --green:#2E9E6B;--green-l:#E3F5EC;
+  --dark:#1A3A4A;--gray:#718096;--line:#D9E6EA;--bg:#F7FAFB;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-weight:900;color:var(--teal-d);font-size:18px;white-space:nowrap}
+.brand span{color:var(--pink)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:2px solid var(--line);background:#fff;border-radius:99px;padding:6px 14px;font-size:15px;font-weight:700;color:var(--gray)}
+.tab.on{color:#fff;border-color:var(--c);background:var(--c)}
+.who{margin-left:auto;font-size:13px;color:var(--gray);border:none;background:none;text-decoration:underline}
+
+main{max-width:1100px;margin:0 auto;padding:22px 16px 90px}
+.panel{display:none}
+.panel.on{display:block}
+.head{display:flex;align-items:center;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+.badge{color:#fff;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;background:var(--c)}
+.head h2{font-size:28px;font-weight:900}
+.head small{font-size:15px;color:var(--gray);font-weight:500}
+.inst{color:var(--c);font-weight:700;font-size:16px;margin-bottom:16px}
+.inst span{color:var(--gray);font-weight:500}
+.sub{display:flex;gap:8px;margin-bottom:16px}
+.sbtn{border:2px solid var(--c);background:#fff;color:var(--c);border-radius:10px;padding:8px 16px;font-size:15px;font-weight:700}
+.sbtn.on{background:var(--c);color:#fff}
+.rules{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.rule{background:#fff;border:1.5px solid var(--c);border-radius:10px;padding:6px 12px;font-size:15px}
+.rule b{color:var(--c)}
+.btn{border:none;border-radius:10px;padding:10px 18px;font-size:15px;font-weight:700;background:var(--c);color:#fff}
+.btn.ghost{background:#fff;color:var(--c);border:2px solid var(--c)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* order puzzle */
+.fixed{display:flex;align-items:center;gap:14px;padding:14px 18px;font-size:26px;font-weight:700;margin-bottom:10px}
+.fixed .let{width:38px;height:38px;border-radius:50%;background:var(--dark);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:18px}
+.olist{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.oitem{display:flex;align-items:center;gap:14px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:14px 18px;cursor:grab;user-select:none}
+.oitem:active{cursor:grabbing}
+.oitem .let{width:38px;height:38px;border-radius:50%;background:var(--teal);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.oitem .ko{font-size:26px;font-weight:700}
+.oitem .en{font-size:14px;color:var(--gray)}
+.oitem.ok{border-color:var(--green);background:var(--green-l)}
+.oitem.no{border-color:var(--pink);background:var(--pink-l)}
+.hide-en .en{display:none}
+.ghost-drag{opacity:.4}
+
+/* flashcards */
+.fc-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.fc{width:min(640px,100%);height:300px;perspective:1200px;cursor:pointer}
+.fc-in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.fc.flip .fc-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;box-shadow:0 6px 24px rgba(26,58,74,.08)}
+.front{background:#fff;border:3px solid var(--c)}
+.back{background:var(--cl);border:3px solid var(--c);transform:rotateY(180deg)}
+.face .big{font-size:44px;font-weight:900}
+.face .mid{font-size:22px;color:var(--gray)}
+.face .pron{font-size:18px;color:var(--c);font-weight:700}
+.face .tap{position:absolute;bottom:14px;font-size:13px;color:var(--gray)}
+.fc-nav{display:flex;align-items:center;gap:12px}
+.fc-nav .cnt{font-size:15px;color:var(--gray);min-width:60px;text-align:center}
+.opts{display:flex;gap:14px;margin-top:6px}
+.opt{border:2px solid var(--c);background:#fff;border-radius:14px;padding:12px 22px;font-size:24px;font-weight:700;color:var(--dark)}
+
+/* builder */
+.builder{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.slot{background:#fff;border:2px solid var(--line);border-radius:16px;padding:14px}
+.slot h4{font-size:14px;color:var(--c);margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:99px;padding:6px 14px;font-size:18px;font-weight:700;color:var(--dark)}
+.chip small{display:block;font-size:11px;color:var(--gray);font-weight:500}
+.chip.on{border-color:var(--c);background:var(--cl)}
+.out{background:var(--cl);border:3px solid var(--c);border-radius:18px;padding:22px;text-align:center;margin-bottom:12px}
+.out .ko{font-size:40px;font-weight:900}
+.out .ko .fix{color:#94a3b8}
+.out .ko .gr{color:var(--c)}
+.out .en{font-size:17px;color:var(--gray);margin-top:6px}
+.save{background:#fff;border:2px dashed var(--line);border-radius:14px;padding:12px 14px}
+.save .lbl{font-size:14px;color:var(--gray);margin-right:6px}
+.sname{border:2px solid var(--c);background:#fff;color:var(--c);border-radius:99px;padding:6px 14px;font-size:15px;font-weight:700}
+.sname.done{background:var(--c);color:#fff}
+
+/* board */
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{background:#fff;border:2px solid var(--line);border-radius:18px;padding:16px;cursor:pointer;position:relative}
+.card h3{font-size:18px;margin-bottom:8px;color:var(--pink)}
+.card .l{font-size:18px;font-weight:700;line-height:1.7}
+.card .l.empty{color:#C3CFD4;font-weight:500}
+.card .trophy{position:absolute;top:10px;right:12px;font-size:26px}
+.modal{position:fixed;inset:0;background:rgba(26,58,74,.55);display:none;align-items:center;justify-content:center;z-index:40;padding:16px}
+.modal.on{display:flex}
+.mbox{background:#fff;border-radius:24px;padding:34px 38px;max-width:900px;width:100%;text-align:center;position:relative}
+.mbox h3{font-size:22px;color:var(--pink);margin-bottom:18px}
+.mbox .ml{font-size:40px;font-weight:900;line-height:1.5}
+.mbox .men{font-size:16px;color:var(--gray);margin-bottom:10px}
+.mclose{position:absolute;top:12px;right:16px;border:none;background:none;font-size:26px;color:var(--gray)}
+
+/* blanks */
+.bl{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.bline{background:#fff;border:2px solid var(--line);border-radius:14px;padding:14px 18px;font-size:28px;font-weight:700;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.bline .n{color:var(--teal-d);font-size:18px;width:24px}
+.blank{display:inline-block;min-width:110px;border-bottom:4px solid var(--teal);color:transparent;cursor:pointer;text-align:center;border-radius:4px}
+.blank.show{color:var(--teal-d);background:var(--teal-l);border-bottom-color:var(--teal-l)}
+.pron-box{display:none;background:var(--teal-l);border-radius:14px;padding:14px 18px;gap:10px;flex-wrap:wrap}
+.pron-box.on{display:flex}
+.pron-box div{background:#fff;border-radius:10px;padding:8px 14px;font-size:20px;font-weight:700}
+.pron-box div span{color:var(--teal-d)}
+
+/* setup */
+.setup{position:fixed;inset:0;background:var(--teal-l);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.setup.off{display:none}
+.sbox{background:#fff;border-radius:24px;padding:30px;max-width:560px;width:100%}
+.sbox h1{font-size:30px;color:var(--teal-d);font-weight:900}
+.sbox h1 span{color:var(--pink)}
+.sbox p{color:var(--gray);margin:6px 0 18px}
+.sbox input{border:2px solid var(--line);border-radius:10px;padding:10px 12px;font-size:16px;flex:1;font-family:inherit;min-width:0}
+.nlist{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 20px;min-height:36px}
+.nchip{background:var(--teal-l);border-radius:99px;padding:6px 8px 6px 14px;font-weight:700;display:flex;align-items:center;gap:6px}
+.nchip button{border:none;background:#fff;border-radius:50%;width:22px;height:22px;color:var(--gray)}
+
+/* pen */
+#pen{position:fixed;inset:0;z-index:30;pointer-events:none}
+#pen.on{pointer-events:auto;cursor:crosshair}
+.pbar{position:fixed;right:16px;bottom:16px;z-index:35;background:#fff;border:2px solid var(--line);border-radius:16px;padding:8px;display:flex;gap:6px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.pbar button{border:2px solid transparent;background:#fff;border-radius:10px;width:38px;height:38px;font-size:18px}
+.pbar .pc{width:26px;height:26px;border-radius:50%;padding:0}
+.pbar .on{border-color:var(--dark)}
+.pbar .tools{display:none;gap:6px;align-items:center}
+.pbar.open .tools{display:flex}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:99px;font-weight:700;opacity:0;transition:opacity .25s;z-index:60;pointer-events:none}
+.toast.on{opacity:1}
+
+/* student mode + sync */
+.card{padding-bottom:32px}
+.card .prog{position:absolute;bottom:10px;right:14px;font-size:13px;font-weight:700;color:var(--gray)}
+.card .prog.full{color:var(--green)}
+.netbar{position:fixed;top:0;left:0;right:0;z-index:70;background:var(--pink);color:#fff;text-align:center;padding:8px 12px;font-weight:700;font-size:14px;display:none}
+.netbar.on{display:block}
+#studentApp{display:none}
+body.student-mode #studentApp{display:block}
+body.student-mode .top,body.student-mode main,body.student-mode #modal,body.student-mode #pen,body.student-mode #pbar{display:none!important}
+.stu-top{background:#fff;border-bottom:1px solid var(--line);padding:12px 16px}
+.stu-wrap{max-width:720px;margin:0 auto;padding:18px 16px 70px}
+.stu-h{font-size:26px;font-weight:900;margin-bottom:14px}
+.stu-names{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.stu-name{border:3px solid var(--teal);background:#fff;color:var(--teal-d);border-radius:16px;padding:20px 10px;font-size:22px;font-weight:900}
+.stu-name:active{background:var(--teal-l)}
+.stu-msg{color:var(--gray);font-size:18px;padding:30px 0;text-align:center}
+.stu-hi{font-size:28px;font-weight:900}
+.stu-sub{color:var(--gray);margin:4px 0 8px;font-size:16px}
+.stu-prog{font-weight:700;color:var(--teal-d);margin-bottom:6px}
+.stu-block{background:#fff;border:2px solid var(--c);border-radius:20px;padding:16px;margin:18px 0}
+.stu-bt{font-size:20px;font-weight:900;color:var(--c);margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+@media (max-width:760px){
+  .builder{grid-template-columns:1fr}
+  .out .ko{font-size:28px}
+  .face .big{font-size:32px}
+  .oitem .ko,.bline{font-size:20px}
+  .mbox .ml{font-size:26px}
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div class="setup off" id="setup">
+  <div class="sbox">
+    <h1>TWICE <span>Cheer Up</span></h1>
+    <p>Who's in class today? Add names (you can add yourself too).</p>
+    <div class="row"><input id="nameIn" placeholder="Student name" maxlength="20"><button class="btn" style="--c:var(--teal)" onclick="addName()">Add</button></div>
+    <div class="nlist" id="nlist"></div>
+    <div class="row"><button class="btn ghost" style="--c:var(--pink)" onclick="addName('Melanie')">+ Melanie</button><button class="btn" style="--c:var(--teal-d);margin-left:auto" onclick="startClass()">Start ▶</button></div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="top">
+  <div class="brand">Cheer Up <span>Practice</span></div>
+  <div class="tabs" id="tabs"></div>
+  <button class="who" onclick="copyStudentLink()">Copy student link</button><button class="who" style="margin-left:6px" onclick="openSetup()">Edit names</button>
+</div>
+
+<main>
+  <!-- 1 ORDER -->
+  <section class="panel" id="p-order" style="--c:var(--teal);--cl:var(--teal-l)">
+    <div class="head"><span class="badge">LISTEN</span><h2>순서 맞추기</h2><small>Put the lines in order</small></div>
+    <div class="inst">Listen and tell me the order. <span>I'll move the cards.</span></div>
+    <div class="row" style="margin-bottom:12px">
+      <a class="btn" style="text-decoration:none" href="https://www.youtube.com/watch?v=c7rCyll5AeY&t=67s" target="_blank" rel="noopener">▶ Music video 1:07</a>
+      <button class="btn ghost" onclick="toggleEn()">Show / hide English</button>
+    </div>
+    <div class="fixed"><div class="let">1</div>CHEER UP BABY, CHEER UP BABY</div>
+    <div class="olist hide-en" id="olist"></div>
+    <div class="row"><button class="btn" onclick="checkOrder()">✓ Check</button><button class="btn ghost" onclick="buildOrder()">↺ Shuffle</button></div>
+  </section>
+
+  <!-- 2 MYEON -->
+  <section class="panel" id="p-myeon" style="--c:var(--orange);--cl:var(--orange-l)">
+    <div class="head"><span class="badge">RULES</span><h2>-(으)면 안 돼요</h2><small>You shouldn't ~</small></div>
+    <div class="sub"><button class="sbtn on" data-g="myeon" data-s="fc">① Say it</button><button class="sbtn" data-g="myeon" data-s="mad">② Funny line</button></div>
+    <div class="view" data-v="myeon-fc">
+      <div class="fc-wrap" id="fc-myeon"></div>
+    </div>
+    <div class="view" data-v="myeon-mad" hidden><div id="mad-0"></div></div>
+  </section>
+
+  <!-- 3 NEUN -->
+  <section class="panel" id="p-neun" style="--c:var(--purple);--cl:var(--purple-l)">
+    <div class="head"><span class="badge">LIKES</span><h2>-는 + noun</h2><small>the ~ (that) I ...</small></div>
+    <div class="sub"><button class="sbtn on" data-g="neun" data-s="fc">① Say it</button><button class="sbtn" data-g="neun" data-s="mad">② Funny line</button></div>
+    <div class="view" data-v="neun-fc">
+      <div class="fc-wrap" id="fc-neun"></div>
+    </div>
+    <div class="view" data-v="neun-mad" hidden><div id="mad-1"></div></div>
+  </section>
+
+  <!-- 4 LLAE -->
+  <section class="panel" id="p-llae" style="--c:var(--green);--cl:var(--green-l)">
+    <div class="head"><span class="badge">CHOICES</span><h2>-(으)ㄹ래</h2><small>Wanna ~? / I'll ~ (my choice)</small></div>
+    <div class="sub"><button class="sbtn on" data-g="llae" data-s="fc">① Say it</button><button class="sbtn" data-g="llae" data-s="mad">② Funny line</button></div>
+    <div class="view" data-v="llae-fc">
+      <div class="fc-wrap" id="fc-llae"></div>
+    </div>
+    <div class="view" data-v="llae-mad" hidden><div id="mad-2"></div></div>
+  </section>
+
+  <!-- 5 BOARD -->
+  <section class="panel" id="p-board" style="--c:var(--pink);--cl:var(--pink-l)">
+    <div class="head"><span class="badge">MY LYRICS</span><h2>나만의 Cheer Up</h2><small>Your own chorus</small></div>
+    <div class="inst">Read your 3 lines out loud! <span>Then vote for the funniest 😂</span></div>
+    <div class="row" style="margin-bottom:14px"><button class="btn ghost" onclick="randomFill()">🎲 Fill empty lines randomly</button><button class="btn ghost" onclick="copyStudentLink()">🔗 Copy student link</button><button class="btn ghost" onclick="resetLines()">🧹 Reset all lines</button></div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <!-- 6 BLANKS -->
+  <section class="panel" id="p-blank" style="--c:var(--teal);--cl:var(--teal-l)">
+    <div class="head"><span class="badge">READ</span><h2>빈칸 읽기</h2><small>Fill the gaps and read</small></div>
+    <div class="inst">Say the missing words. <span>Tap a blank to check.</span></div>
+    <div class="bl" id="bl"></div>
+    <div class="row" style="margin-bottom:14px"><button class="btn" onclick="blanks(true)">Show all</button><button class="btn ghost" onclick="blanks(false)">Hide all</button><button class="btn ghost" onclick="document.getElementById('pron').classList.toggle('on')">🗣 Sound tips</button></div>
+    <div class="pron-box" id="pron">
+      <div>맘을 → <span>[마믈]</span></div><div>쉽게 → <span>[쉽께]</span></div><div>좋아하는 → <span>[조아하는]</span></div><div>않게 → <span>[안케]</span></div><div>될걸 → <span>[될껄]</span></div>
+    </div>
+  </section>
+</main>
+
+<!-- MODAL -->
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="mbox"><button class="mclose" onclick="closeModal()">×</button><div id="mbody"></div></div>
+</div>
+
+<!-- PEN -->
+<canvas id="pen"></canvas>
+<div class="pbar" id="pbar">
+  <button id="penBtn" title="Pen" onclick="togglePen()">✏️</button>
+  <div class="tools">
+    <button class="pc on" style="background:#E8618C" onclick="penColor(this,'#E8618C')"></button>
+    <button class="pc" style="background:#1AB5B0" onclick="penColor(this,'#1AB5B0')"></button>
+    <button class="pc" style="background:#E07B45" onclick="penColor(this,'#E07B45')"></button>
+    <button class="pc" style="background:#1A3A4A" onclick="penColor(this,'#1A3A4A')"></button>
+    <button id="eraser" title="Eraser" onclick="penErase(this)">🧽</button>
+    <button title="Clear" onclick="clearPen()">🗑</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="netbar" id="netbar"></div>
+
+<!-- STUDENT APP (only shown with ?student) -->
+<div id="studentApp">
+  <div class="stu-top"><div class="brand">Cheer Up <span>Practice</span></div></div>
+  <div class="stu-wrap">
+    <div id="stu-pick"></div>
+    <div id="stu-play" hidden>
+      <div id="stu-head"></div>
+      <div id="stu-blocks"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- state ---------- */
+const STUDENT_MODE=new URLSearchParams(location.search).has('student');
+let students=[];            // [{id,name,lines:[l0,l1,l2],trophy}]
+let synced=false,firstSync=true,myId=null;
+try{myId=sessionStorage.getItem('cheerup_me')||null;}catch(e){}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),1400);}
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function uid(){return 'u'+Math.random().toString(36).slice(2,9);}
+function studentLink(){return location.href.split('#')[0].split('?')[0]+'?student';}
+function rosterOf(list){return list.map(s=>({id:s.id,name:s.name}));}
+
+/* ---------- Firebase sync ---------- */
+async function fbMerge(obj){
+  if(!window.FB){toast('Not connected yet');return false;}
+  try{await FB.merge(obj);return true;}
+  catch(e){console.error(e);toast('Could not save - check connection');return false;}
+}
+function applyData(d){
+  d=d||{};
+  const roster=Array.isArray(d.roster)?d.roster:[];
+  const L=d.lines||{},T=d.trophy||{};
+  students=roster.map(r=>({id:r.id,name:r.name,lines:[0,1,2].map(k=>(L[r.id]&&L[r.id][k])||null),trophy:!!T[r.id]}));
+  synced=true;
+}
+function netError(msg){const n=document.getElementById('netbar');n.textContent=msg;n.classList.add('on');}
+function onData(d){
+  applyData(d);
+  document.getElementById('netbar').classList.remove('on');
+  if(STUDENT_MODE){
+    if(myId&&!students.some(s=>s.id===myId)){myId=null;try{sessionStorage.removeItem('cheerup_me');}catch(e){}}
+    renderStudent();refreshSave();
+  }else{
+    renderNames();refreshSave();renderBoard();
+    if(firstSync&&!students.length)openSetup();
+  }
+  firstSync=false;
+}
+window.onFirebaseReady=function(){
+  FB.watch(onData,e=>{console.error(e);netError('Cannot read from Firebase (check the Firestore rules). Nothing is shared right now.');});
+};
+setTimeout(()=>{if(!synced)netError('Cannot reach Firebase yet. Check your internet connection.');},8000);
+
+/* ---------- setup (teacher) ---------- */
+function renderNames(){
+  document.getElementById('nlist').innerHTML=students.map((s,i)=>`<span class="nchip">${esc(s.name)}<button onclick="delName(${i})">×</button></span>`).join('')||'<span style="color:#9AAAB2">No names yet</span>';
+}
+function addName(n){
+  const inp=document.getElementById('nameIn');n=(n||inp.value).trim();if(!n)return;
+  if(students.some(s=>s.name===n))return;
+  inp.value='';
+  const id=uid();
+  students.push({id,name:n,lines:[null,null,null],trophy:false});
+  renderNames();renderBoard();
+  fbMerge({roster:rosterOf(students)});
+}
+function delName(i){
+  students.splice(i,1);renderNames();renderBoard();
+  fbMerge({roster:rosterOf(students)});
+}
+document.getElementById('nameIn').addEventListener('keydown',e=>{if(e.key==='Enter')addName();});
+function openSetup(){renderNames();document.getElementById('setup').classList.remove('off');}
+function startClass(){document.getElementById('setup').classList.add('off');refreshSave();renderBoard();}
+async function copyStudentLink(){
+  const url=studentLink();
+  try{await navigator.clipboard.writeText(url);}
+  catch(e){const t=document.createElement('input');t.value=url;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();}
+  toast('Student link copied');
+}
+
+/* ---------- student screen ---------- */
+function saveMine(li){
+  const me=students.find(s=>s.id===myId);if(!me)return;
+  if(sel[li].some(x=>!x)){toast('Pick one from each box first');return;}
+  const r=MAD[li].make(...sel[li]);const val={ko:r.plain,en:r.en};
+  me.lines[li]=val;drawSave(li);renderStudentHead();
+  fbMerge({lines:{[me.id]:{[li]:val}}}).then(ok=>{if(ok)toast('Saved ✓');});
+}
+function renderStudent(){
+  const pickEl=document.getElementById('stu-pick'),play=document.getElementById('stu-play');
+  const me=students.find(s=>s.id===myId);
+  if(!me){
+    play.hidden=true;pickEl.hidden=false;
+    pickEl.innerHTML=!synced?'<p class="stu-msg">Connecting...</p>'
+      :students.length?`<h2 class="stu-h">Tap your name</h2><div class="stu-names">${students.map(s=>`<button class="stu-name" data-id="${s.id}">${esc(s.name)}</button>`).join('')}</div>`
+      :'<p class="stu-msg">Waiting for your teacher to add names...</p>';
+    pickEl.querySelectorAll('.stu-name').forEach(b=>b.onclick=()=>{
+      myId=b.dataset.id;try{sessionStorage.setItem('cheerup_me',myId);}catch(e){}
+      renderStudent();refreshSave();window.scrollTo(0,0);
+    });
+    return;
+  }
+  pickEl.hidden=true;play.hidden=false;renderStudentHead();
+}
+function renderStudentHead(){
+  const me=students.find(s=>s.id===myId);if(!me)return;
+  const n=me.lines.filter(Boolean).length;
+  document.getElementById('stu-head').innerHTML=`<div class="stu-hi">Hi, ${esc(me.name)}! 👋</div><div class="stu-sub">Make 3 funny lines. Tap the words, then press <b>Save</b>.</div><div class="stu-prog">${n} / 3 saved${n===3?' 🎉':''}</div><button class="who" id="stu-change" style="margin-left:0">Not you? Change name</button>`;
+  document.getElementById('stu-change').onclick=()=>{myId=null;try{sessionStorage.removeItem('cheerup_me');}catch(e){}renderStudent();};
+}
+function initStudent(){
+  document.body.classList.add('student-mode');
+  document.getElementById('setup').classList.add('off');
+  const blocks=document.getElementById('stu-blocks');
+  // song order: 면 안 돼 / ㄹ래 / -는
+  const defs=[[0,'Line 1','-(으)면 안 돼요','var(--orange)','var(--orange-l)'],[2,'Line 2','-(으)ㄹ래','var(--green)','var(--green-l)'],[1,'Line 3','-는 + noun','var(--purple)','var(--purple-l)']];
+  defs.forEach(([k,t,g,c,cl])=>{
+    const w=document.createElement('section');w.className='stu-block';w.style.cssText=`--c:${c};--cl:${cl}`;
+    w.innerHTML=`<div class="stu-bt"><span class="badge">${t}</span>${g}</div>`;
+    w.appendChild(document.getElementById('mad-'+k));blocks.appendChild(w);
+  });
+  renderStudent();
+}
+
+/* ---------- tabs ---------- */
+const TABS=[['p-order','1 순서','var(--teal)'],['p-myeon','2 면 안 돼요','var(--orange)'],['p-llae','3 ㄹ래','var(--green)'],['p-neun','4 -는','var(--purple)'],['p-board','5 가사 보드','var(--pink)'],['p-blank','6 빈칸 읽기','var(--teal)']];
+document.getElementById('tabs').innerHTML=TABS.map(([id,l,c],i)=>`<button class="tab${i?'':' on'}" style="--c:${c}" data-p="${id}">${l}</button>`).join('');
+document.getElementById('p-order').classList.add('on');
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===b.dataset.p));
+  clearPen(); if(b.dataset.p==='p-board')renderBoard(); window.scrollTo(0,0);
+});
+document.querySelectorAll('.sbtn').forEach(b=>b.onclick=()=>{
+  const g=b.dataset.g;
+  document.querySelectorAll(`.sbtn[data-g="${g}"]`).forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll(`.view[data-v^="${g}-"]`).forEach(v=>v.hidden=v.dataset.v!==`${g}-${b.dataset.s}`);
+  clearPen();
+});
+
+/* ---------- 1. order ---------- */
+const LINES=[{n:2,l:'B',ko:'좀 더 힘을 내',en:'Come on, a little more strength'},
+ {n:3,l:'D',ko:'여자가 쉽게 맘을 주면 안돼',en:'A girl shouldn\'t give her heart easily'},
+ {n:4,l:'E',ko:'그래야 니가 날 더 좋아하게 될걸',en:'That way you\'ll like me more'},
+ {n:5,l:'A',ko:'태연하게 연기할래 아무렇지 않게',en:'I\'ll pretend to be calm, like it\'s nothing'},
+ {n:6,l:'C',ko:'내가 널 좋아하는 맘 모르게',en:'So you won\'t know the feelings I have for you'}];
+function buildOrder(){
+  const el=document.getElementById('olist');
+  const start=[...LINES].sort((a,b)=>a.l.localeCompare(b.l));
+  el.innerHTML=start.map(x=>`<div class="oitem" data-n="${x.n}"><div class="let">${x.l}</div><div><div class="ko">${x.ko}</div><div class="en">${x.en}</div></div></div>`).join('');
+}
+function checkOrder(){
+  [...document.querySelectorAll('#olist .oitem')].forEach((it,i)=>{const ok=+it.dataset.n===i+2;it.classList.toggle('ok',ok);it.classList.toggle('no',!ok);});
+}
+function toggleEn(){document.getElementById('olist').classList.toggle('hide-en');}
+buildOrder();
+if(window.Sortable)Sortable.create(document.getElementById('olist'),{animation:180,ghostClass:'ghost-drag',onStart:()=>document.querySelectorAll('#olist .oitem').forEach(i=>i.classList.remove('ok','no'))});
+else{ // fallback: click one card, then another to swap
+  let first=null;
+  document.getElementById('olist').addEventListener('click',e=>{
+    const it=e.target.closest('.oitem');if(!it)return;
+    document.querySelectorAll('#olist .oitem').forEach(i=>i.classList.remove('ok','no'));
+    if(!first){first=it;it.style.outline='3px solid var(--teal)';return;}
+    if(first!==it){const a=document.createElement('div');first.replaceWith(a);it.replaceWith(first);a.replaceWith(it);}
+    first.style.outline='';first=null;
+  });
+}
+
+/* ---------- flashcards ---------- */
+const FC={
+ myeon:[
+  {f:['늦다','be late'],b:['늦으면 안 돼요','[느즈면]']},
+  {f:['울다','cry'],b:['울면 안 돼요','ㄹ → 면']},
+  {f:['먹다','eat'],b:['먹으면 안 돼요','[머그면]']},
+  {f:['주다','give'],b:['주면 안 돼요','song: 맘을 주면 안돼']},
+  {f:['답장하다','text back'],b:['답장하면 안 돼요','[답짱하면]']}],
+ neun:[
+  {f:['좋아하다 + 가수','a singer I like'],b:['좋아하는 가수','[조아하는]']},
+  {f:['자주 먹다 + 음식','food I often eat'],b:['자주 먹는 음식','[멍는]']},
+  {f:['매일 보다 + 사람','someone I see every day'],b:['매일 보는 사람','']},
+  {f:['살다 + 도시','the city I live in'],b:['사는 도시','ㄹ drops']},
+  {f:['요즘 듣다 + 노래','a song I listen to lately'],b:['요즘 듣는 노래','[든는]']}]
+};
+const CHOICE=[
+ {q:'뭐 마실래?',en:'What do you wanna drink?',o:['커피','차'],v:'마실래'},
+ {q:'뭐 먹을래?',en:'What do you wanna eat?',o:['떡볶이','김밥'],v:'먹을래',p:'[머글래]'},
+ {q:'뭐 볼래?',en:'What do you wanna watch?',o:['영화','드라마'],v:'볼래'},
+ {q:'어디 갈래?',en:'Where do you wanna go?',o:['노래방에','카페에'],v:'갈래'}];
+function makeFC(id,n,render){
+  const box=document.getElementById(id);let i=0,order=[...Array(n).keys()];
+  function draw(){
+    const k=order[i];
+    box.innerHTML=`<div class="fc" id="${id}-c"><div class="fc-in">${render(k)}</div></div>
+      <div class="fc-nav"><button class="btn ghost" data-a="p">◀</button><span class="cnt">${i+1} / ${n}</span><button class="btn ghost" data-a="n">▶</button><button class="btn ghost" data-a="s">🔀</button></div>`;
+    const c=document.getElementById(id+'-c');
+    c.onclick=e=>{if(e.target.closest('.opt'))return;c.classList.toggle('flip');};
+    c.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{c.querySelector('.choice-ans').textContent=`난 ${o.dataset.o} ${CHOICE[k].v}.`;c.classList.add('flip');});
+    box.querySelector('[data-a=p]').onclick=()=>{i=(i-1+n)%n;draw();};
+    box.querySelector('[data-a=n]').onclick=()=>{i=(i+1)%n;draw();};
+    box.querySelector('[data-a=s]').onclick=()=>{order=shuffle(order);i=0;draw();};
+  }
+  draw();
+}
+['myeon','neun'].forEach(g=>makeFC('fc-'+g,FC[g].length,k=>{const c=FC[g][k];return `
+  <div class="face front"><div class="big">${c.f[0]}</div><div class="mid">${c.f[1]}</div><div class="tap">Say it, then tap to check</div></div>
+  <div class="face back"><div class="big">${c.b[0]}</div>${c.b[1]?`<div class="pron">${c.b[1]}</div>`:''}</div>`;}));
+makeFC('fc-llae',CHOICE.length,k=>{const c=CHOICE[k];return `
+  <div class="face front"><div class="big">${c.q}</div><div class="mid">${c.en}</div><div class="opts">${c.o.map(o=>`<button class="opt" data-o="${o}">${o}</button>`).join('')}</div><div class="tap">Pick one and say it</div></div>
+  <div class="face back"><div class="big choice-ans">난 ${c.o[0]} ${c.v}.</div>${c.p?`<div class="pron">${c.p}</div>`:''}</div>`;});
+
+/* ---------- funny line builders ---------- */
+const MAD=[
+ {title:'Line 1',slots:[
+   {h:'When / where',items:[['매일','every day'],['수업 시간에','in class'],['데이트 날에','on a date day'],['밤 12시에','at midnight'],['선생님 앞에서','in front of the teacher'],['엄마 앞에서','in front of Mom']]},
+   {h:'What  (already 면 form)',items:[['예쁘면','be pretty'],['잘생기면','be handsome'],['똑똑하면','be smart'],['웃으면','laugh'],['치킨 먹으면','eat chicken'],['춤추면','dance'],['노래하면','sing'],['답장하면','text back']]}],
+  make:(a,b)=>({ko:`${a[0]} <span class="gr">${b[0]} 안 돼</span>`,plain:`${a[0]} ${b[0]} 안 돼`,en:`You can't ${b[1]} ${a[1]}.`})},
+ {title:'Line 2',slots:[
+   {h:'-는  (I ...)',items:[['좋아하는','like'],['매일 보는','see every day'],['자주 만나는','often meet'],['무서워하는','am scared of'],['싫어하는','hate']]},
+   {h:'Who',items:[['선생님','teacher'],['썸남','crush'],['엄마','Mom'],['고양이','cat'],['강아지','puppy'],['옆집 아저씨','neighbor guy']]}],
+  make:(a,b)=>({ko:`<span class="fix">내가</span> <span class="gr">${a[0]}</span> ${b[0]} <span class="fix">모르게</span>`,plain:`내가 ${a[0]} ${b[0]} 모르게`,en:`Without the ${b[1]} I ${a[1]} knowing`})},
+ {title:'Line 3',slots:[
+   {h:'How',items:[['태연하게','calmly'],['아무렇지 않게','like it\'s nothing'],['조용히','quietly'],['혼자','alone'],['몰래','secretly']]},
+   {h:'I\'ll ...  (ㄹ래 form)',items:[['춤출래','dance'],['먹을래','eat'],['잘래','sleep'],['노래할래','sing'],['도망갈래','run away'],['울래','cry']]}],
+  make:(a,b)=>({ko:`${a[0]} <span class="gr">${b[0]}</span>`,plain:`${a[0]} ${b[0]}`,en:`I'll ${b[1]} ${a[1]}.`})}
+];
+const sel=MAD.map(m=>m.slots.map(()=>null));
+const EMPTY=['___','___'];
+function drawMad(li){
+  const m=MAD[li],box=document.getElementById('mad-'+li);
+  box.innerHTML=`<div class="inst">Make a funny line! <span>The weirder, the better 😂</span></div>
+   <div class="builder">${m.slots.map((s,si)=>`<div class="slot"><h4>${s.h}</h4><div class="chips">${s.items.map((it,ii)=>`<button class="chip${sel[li][si]===it?' on':''}" data-si="${si}" data-ii="${ii}">${it[0]}<small>${it[1]}</small></button>`).join('')}</div></div>`).join('')}</div>
+   <div class="out" id="out-${li}"></div>
+   <div class="row" style="margin-bottom:12px"><button class="btn" data-r>🎲 Random</button><button class="btn ghost" data-x>↺ Reset</button></div>
+   <div class="save" id="save-${li}"></div>`;
+  box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{sel[li][+c.dataset.si]=m.slots[+c.dataset.si].items[+c.dataset.ii];drawMad(li);});
+  box.querySelector('[data-r]').onclick=()=>{sel[li]=m.slots.map(s=>pick(s.items));drawMad(li);};
+  box.querySelector('[data-x]').onclick=()=>{sel[li]=m.slots.map(()=>null);drawMad(li);};
+  const r=m.make(...sel[li].map(x=>x||EMPTY));
+  document.getElementById('out-'+li).innerHTML=`<div class="ko">${r.ko}</div><div class="en">${r.en}</div>`;
+  drawSave(li);
+}
+function drawSave(li){
+  const el=document.getElementById('save-'+li);if(!el)return;
+  if(STUDENT_MODE){
+    const me=students.find(s=>s.id===myId);
+    if(!me){el.innerHTML='';return;}
+    const sv=me.lines[li];
+    el.innerHTML=`<div class="row"><button class="btn" data-save>${sv?'Save again':'Save my line'}</button>${sv?`<span class="lbl" style="color:var(--c);font-weight:700">✓ Saved: ${esc(sv.ko)}</span>`:''}</div>`;
+    el.querySelector('[data-save]').onclick=()=>saveMine(li);
+    return;
+  }
+  el.innerHTML=students.length?`<div class="row"><span class="lbl">Save to:</span>${students.map((s,i)=>`<button class="sname${s.lines[li]?' done':''}" data-i="${i}">${s.lines[li]?'✓ ':''}${esc(s.name)}</button>`).join('')}</div>`:'<span class="lbl">Add names first (Edit names, top right) to save lines.</span>';
+  el.querySelectorAll('.sname').forEach(b=>b.onclick=()=>{
+    if(sel[li].some(x=>!x)){toast('Pick one from each box first');return;}
+    const r=MAD[li].make(...sel[li]);const st=students[+b.dataset.i];
+    const val={ko:r.plain,en:r.en};
+    st.lines[li]=val;drawSave(li);renderBoard();toast(`Saved for ${st.name} ✓`);
+    fbMerge({lines:{[st.id]:{[li]:val}}});
+  });
+}
+function refreshSave(){MAD.forEach((_,i)=>drawSave(i));}
+MAD.forEach((_,i)=>drawMad(i));
+
+/* ---------- board ---------- */
+const ORD=[0,2,1]; // song order: 면 안 돼 / ㄹ래 / -는 모르게
+function renderBoard(){
+  const b=document.getElementById('board');if(!b)return;
+  if(!students.length){b.innerHTML='<p style="color:#718096">No names yet. Click "Edit names" at the top.</p>';return;}
+  b.innerHTML=students.map((s,i)=>{const n=s.lines.filter(Boolean).length;return `<div class="card" data-i="${i}">${s.trophy?'<div class="trophy">🏆</div>':''}<h3>${esc(s.name)}</h3>${ORD.map(k=>s.lines[k]).map(l=>`<div class="l${l?'':' empty'}">${l?l.ko:'...'}</div>`).join('')}<div class="prog${n===3?' full':''}">${n}/3${n===3?' ✓':''}</div></div>`;}).join('');
+  b.querySelectorAll('.card').forEach(c=>c.onclick=()=>openCard(+c.dataset.i));
+}
+function openCard(i){
+  const s=students[i];if(!s)return;
+  document.getElementById('mbody').innerHTML=`<h3>${esc(s.name)}'s Cheer Up</h3>${ORD.map(k=>s.lines[k]).map(l=>l?`<div class="ml">${l.ko}</div><div class="men">${l.en}</div>`:'<div class="ml" style="color:#C3CFD4">...</div>').join('')}
+    <div class="row" style="justify-content:center;margin-top:16px"><button class="btn" style="--c:var(--pink)" onclick="trophy(${i})">${s.trophy?'Remove 🏆':'Give 🏆'}</button></div>`;
+  document.getElementById('modal').classList.add('on');
+}
+function closeModal(){document.getElementById('modal').classList.remove('on');}
+function trophy(i){
+  const s=students[i];s.trophy=!s.trophy;
+  fbMerge({trophy:{[s.id]:s.trophy}});
+  openCard(i);renderBoard();
+}
+function randomFill(){
+  const upd={};
+  students.forEach(s=>{s.lines=s.lines.map((l,li)=>{if(l)return l;const r=MAD[li].make(...MAD[li].slots.map(x=>pick(x.items)));const v={ko:r.plain,en:r.en};(upd[s.id]=upd[s.id]||{})[li]=v;return v;});});
+  if(Object.keys(upd).length)fbMerge({lines:upd});
+  renderBoard();refreshSave();toast('Empty lines filled 🎲');
+}
+function resetLines(){
+  if(!confirm('Clear all saved lines and trophies for everyone?'))return;
+  students.forEach(s=>{s.lines=[null,null,null];s.trophy=false;});
+  renderBoard();refreshSave();
+  if(window.FB)FB.replace({roster:rosterOf(students),lines:{},trophy:{}}).catch(e=>{console.error(e);toast('Could not reset - check connection');});
+}
+
+/* ---------- blanks ---------- */
+const BL=[['CHEER UP BABY, CHEER UP BABY'],['좀 더 ',['힘을'],' 내'],['여자가 ',['쉽게'],' 맘을 ',['주면 안돼']],['그래야 니가 날 더 ',['좋아하게'],' 될걸'],[['태연하게'],' ',['연기할래'],' 아무렇지 않게'],['내가 널 ',['좋아하는'],' 맘 ',['모르게']],['just get it together and then baby CHEER UP']];
+document.getElementById('bl').innerHTML=BL.map((l,i)=>`<div class="bline"><span class="n">${i+1}</span><span>${l.map(p=>Array.isArray(p)?`<span class="blank" onclick="this.classList.toggle('show')">${p[0]}</span>`:p).join('')}</span></div>`).join('');
+function blanks(show){document.querySelectorAll('.blank').forEach(b=>b.classList.toggle('show',show));}
+
+/* ---------- pen ---------- */
+const cv=document.getElementById('pen'),ctx=cv.getContext('2d');
+let penOn=false,drawing=false,color='#E8618C',erase=false,last=null;
+function sizeCanvas(){const d=document.createElement('canvas');d.width=cv.width;d.height=cv.height;d.getContext('2d').drawImage(cv,0,0);cv.width=innerWidth;cv.height=innerHeight;ctx.drawImage(d,0,0);}
+sizeCanvas();addEventListener('resize',sizeCanvas);
+function togglePen(){penOn=!penOn;cv.classList.toggle('on',penOn);document.getElementById('pbar').classList.toggle('open',penOn);document.getElementById('penBtn').classList.toggle('on',penOn);}
+function penColor(b,c){color=c;erase=false;document.querySelectorAll('.pbar .pc,#eraser').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+function penErase(b){erase=true;document.querySelectorAll('.pbar .pc').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+function clearPen(){ctx.clearRect(0,0,cv.width,cv.height);}
+cv.addEventListener('pointerdown',e=>{if(!penOn)return;drawing=true;last=[e.clientX,e.clientY];cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',e=>{
+  if(!drawing)return;
+  ctx.globalCompositeOperation=erase?'destination-out':'source-over';
+  ctx.strokeStyle=color;ctx.lineWidth=erase?28:5;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.beginPath();ctx.moveTo(...last);ctx.lineTo(e.clientX,e.clientY);ctx.stroke();last=[e.clientX,e.clientY];
+});
+['pointerup','pointercancel','pointerleave'].forEach(t=>cv.addEventListener(t,()=>drawing=false));
+
+/* ---------- init ---------- */
+refreshSave();renderBoard();
+if(STUDENT_MODE)initStudent();
+</script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyDWWi_Zsl8wblOhIcA97bEVEmp75WyJIWo",
+  authDomain: "quiz-b52e1.firebaseapp.com",
+  projectId: "quiz-b52e1",
+  storageBucket: "quiz-b52e1.firebasestorage.app",
+  messagingSenderId: "692181807751",
+  appId: "1:692181807751:web:956a8044cc14b32fe2be22"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const ref = doc(db, 'storage', 'cheerup-class');
+window.FB = {
+  watch: (ok, err) => onSnapshot(ref, snap => ok(snap.exists() ? snap.data() : {}), err),
+  merge: obj => setDoc(ref, obj, { merge: true }),
+  replace: obj => setDoc(ref, obj)
+};
+if (window.onFirebaseReady) window.onFirebaseReady();
+</script>
+</body>
+</html>
