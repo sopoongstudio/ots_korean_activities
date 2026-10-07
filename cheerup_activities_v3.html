@@ -2606,7 +2606,7 @@ var qrcode = function() {
 </script>
 <script>
 /* ---------- state ---------- */
-const STUDENT_MODE=new URLSearchParams(location.search).has('student');
+const STUDENT_MODE=!new URLSearchParams(location.search).has('inst');
 let students=[];            // [{id,name,lines:[l0,l1,l2],trophy}]
 let synced=false,firstSync=true,myId=null;
 try{myId=sessionStorage.getItem('cheerup_me')||null;}catch(e){}
