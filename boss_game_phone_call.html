@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Derp Knight 보스전</title>
+<style>
+:root{--bg1:#140a26;--bg2:#2a1450;--pur:#8b5cf6;--org:#ff8a2a;--bone:#f4efe3;--ink:#fff;--sub:#b9a9dd;--red:#ef4466;--grn:#2fbf71}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);background:radial-gradient(circle at 50% 0%,var(--bg2),var(--bg1) 70%);font-family:"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR",sans-serif;padding:18px 16px 40px;overflow-x:hidden}
+.wrap{max-width:980px;margin:0 auto}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.logo{font-weight:800;font-size:24px;letter-spacing:.02em}.logo b{color:var(--org)}
+.tabs{display:flex;gap:8px;margin-left:auto}
+.tab{font:inherit;font-weight:700;font-size:16px;color:var(--sub);background:#ffffff12;border:2px solid #ffffff22;border-radius:999px;padding:8px 18px;cursor:pointer}
+.tab.on{color:#fff;background:var(--pur);border-color:var(--pur)}
+.panel{display:none}.panel.on{display:block}
+/* setup */
+.setup{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:var(--sub);font-size:15px;margin-bottom:12px}
+.setup select,.setup button{font:inherit;font-size:15px;border-radius:10px;border:2px solid #ffffff33;background:#ffffff14;color:#fff;padding:6px 10px}
+.setup option{color:#111}.setup label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.btn{font:inherit;font-weight:800;font-size:18px;border:0;border-radius:14px;padding:12px 22px;cursor:pointer;color:#fff}
+.btn:active{transform:translateY(1px)}
+.b-go{background:var(--org);color:#2a1450}.b-ok{background:var(--grn)}.b-no{background:var(--red)}.b-rev{background:#ffffff1f;border:2px solid #ffffff44}
+/* arena */
+.arena{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:center}
+@media(max-width:760px){.arena{grid-template-columns:1fr}}
+.stage{position:relative}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.hp{flex:1;min-width:200px}
+.hpName{font-weight:800;font-size:14px;color:var(--org);letter-spacing:.06em;margin-bottom:4px}
+.hpBar{display:flex;gap:3px}
+.seg{flex:1;height:16px;border-radius:4px;background:var(--bone);transition:all .3s}
+.seg.lost{background:#ffffff1a;transform:translateY(5px) rotate(8deg);opacity:.5}
+.hearts{font-size:26px;letter-spacing:2px;white-space:nowrap}
+.hearts .lost{filter:grayscale(1);opacity:.3}
+#knight{width:100%;max-width:340px;display:block;margin:0 auto;overflow:visible;--p:1.2s}
+#knight.rage{--p:.7s}
+#knight *{transform-box:view-box}
+#rig{animation:bob var(--p) infinite}
+@keyframes bob{0%,50%,100%{transform:translateY(3px)}25%,75%{transform:translateY(-4px)}}
+#legL{transform-origin:140px 236px;animation:stomp var(--p) infinite}
+#legR{transform-origin:180px 236px;animation:stomp var(--p) calc(var(--p)/-2) infinite}
+@keyframes stomp{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-16px) rotate(-9deg)}}
+#armR{transform-origin:212px 152px;animation:swing var(--p) infinite}
+@keyframes swing{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(16deg)}}
+#armL{transform-origin:108px 152px;animation:fist .25s infinite}
+@keyframes fist{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(5deg)}}
+#cape{transform-origin:160px 140px;animation:sway calc(var(--p)*2) infinite}
+@keyframes sway{0%,100%{transform:skewX(-4deg)}50%{transform:skewX(4deg)}}
+#helm{transform-origin:160px 80px;animation:wob var(--p) infinite}
+@keyframes wob{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+#jaw{transform-origin:160px 124px;animation:roar calc(var(--p)*2) infinite}
+@keyframes roar{0%,55%,100%{transform:rotate(0)}65%,90%{transform:rotate(15deg)}}
+.glow{animation:flick .3s infinite alternate}
+@keyframes flick{from{opacity:.65}to{opacity:1}}
+#knight.rage .glow{fill:#ff2a3a}
+#knight .dust{transform-box:fill-box;transform-origin:center;opacity:0;animation:dust var(--p) infinite}
+#knight .dust.r{animation-delay:calc(var(--p)/-2)}
+@keyframes dust{0%,48%{opacity:0;transform:scale(.3)}52%{opacity:.85}100%{opacity:0;transform:scale(2) translateY(-10px)}}
+#knight.hit{animation:recoil .7s}
+@keyframes recoil{0%{transform:translateX(0)}20%{transform:translateX(-34px) rotate(-5deg)}60%{transform:translateX(-10px)}100%{transform:translateX(0)}}
+#knight.hit .glow{fill:#fff}
+#knight.taunt #rig{animation:jump .7s}
+@keyframes jump{0%,100%{transform:translateY(3px)}40%{transform:translateY(-34px)}}
+#knight.taunt #jaw{animation:laugh .14s 6}
+@keyframes laugh{0%,100%{transform:rotate(0)}50%{transform:rotate(18deg)}}
+#sag{transform-origin:160px 330px;transition:transform .6s}
+#knight.d-legR #sag{transform:translate(10px,12px) rotate(4deg)}
+#knight.d-legL #sag{transform:translate(-10px,12px) rotate(-4deg)}
+#knight.d-legR.d-legL #sag{transform:translateY(42px)}
+#shinL{transform-origin:130px 284px}#shinR{transform-origin:190px 284px}
+@keyframes helmDrop{0%{transform:translate(0,0) rotate(0)}30%{transform:translate(-30px,-70px) rotate(-120deg)}62%{transform:translate(-80px,232px) rotate(-230deg)}78%{transform:translate(-85px,210px) rotate(-240deg)}100%{transform:translate(-83px,232px) rotate(-250deg)}}
+#knight.d-helmet #helm{animation:helmDrop .95s forwards}
+#knight #swordFall{display:none;transform-box:fill-box;transform-origin:center}
+#knight.d-sword #swordIn{display:none}
+#knight.d-sword #swordFall{display:inline;animation:swordDrop .8s cubic-bezier(.5,0,.9,.6) forwards}
+@keyframes swordDrop{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(36px,172px) rotate(166deg)}}
+@keyframes capeDrop{0%{transform:skewX(0)}40%{transform:translateY(40px) scaleY(.9) skewX(8deg)}100%{transform:translateY(150px) scaleY(.15) scaleX(1.1)}}
+#knight.d-cape #cape{animation:capeDrop 1s forwards}
+@keyframes shinRb{0%{transform:none}25%{transform:rotate(18deg) translate(0,-6px)}100%{transform:translate(34px,44px) rotate(-90deg)}}
+@keyframes shinLb{0%{transform:none}25%{transform:rotate(-18deg) translate(0,-6px)}100%{transform:translate(-34px,44px) rotate(90deg)}}
+@keyframes limpR{to{transform:rotate(10deg)}}@keyframes limpL{to{transform:rotate(-10deg)}}
+#knight.d-legR #legR{animation:limpR .6s forwards}#knight.d-legR #shinR{animation:shinRb 1s forwards}
+#knight.d-legL #legL{animation:limpL .6s forwards}#knight.d-legL #shinL{animation:shinLb 1s forwards}
+@keyframes armDrop{to{transform:translate(-26px,95px) rotate(-70deg)}}
+#knight.d-armL #armL{animation:armDrop .9s forwards}
+@keyframes ribsDrop{to{transform:scaleY(.35)}}
+#knight.d-ribs #ribs{transform-origin:160px 230px;animation:ribsDrop .8s forwards}
+#knight.dead *{animation:none!important}
+#knight.dead #sag{transform:none}
+#knight.dead #rig{transform:translateY(95px)}
+#knight.dead #ribs{transform:scaleY(.35);transform-origin:160px 230px}
+#knight.dead:not(.d-legR) #legR{transform:translate(38px,28px) rotate(80deg)}
+#knight.dead.d-legR #legR{transform:rotate(10deg)}
+#knight.dead.d-legR #shinR{transform:translate(34px,44px) rotate(-90deg)}
+#knight.dead:not(.d-legL) #legL{transform:translate(-34px,24px) rotate(-75deg)}
+#knight.dead.d-legL #legL{transform:rotate(-10deg)}
+#knight.dead.d-legL #shinL{transform:translate(-34px,44px) rotate(90deg)}
+#knight.dead #head{transform:translate(-44px,70px) rotate(-28deg)}
+#knight.dead #armR{transform:translate(70px,105px) rotate(95deg)}
+#knight.dead #armL{transform:translate(-26px,95px) rotate(-70deg)}
+#knight.dead #cape{transform:translateY(150px) scaleY(.15) scaleX(1.1)}
+#knight.dead.d-helmet #helm{transform:translate(-83px,232px) rotate(-250deg)}
+#knight.dead:not(.d-helmet) #helm{transform:translate(190px,190px) rotate(560deg);transition:transform 1.8s cubic-bezier(.3,.1,.5,1)}
+#knight.dead.d-sword #swordFall{transform:translate(36px,172px) rotate(166deg)}
+#belt{display:none}#knight.champ #belt{display:inline}
+@keyframes cheerL{from{transform:rotate(105deg)}to{transform:rotate(125deg)}}
+@keyframes cheerR{from{transform:rotate(-65deg)}to{transform:rotate(-85deg)}}
+@keyframes cheerS{from{transform:rotate(65deg)}to{transform:rotate(85deg)}}
+#knight.champ #swordIn{transform-origin:263px 172px;animation:cheerS .3s infinite alternate}
+#knight.champ{--p:.7s}
+#knight.champ #armL{animation:cheerL .3s infinite alternate}
+#knight.champ #armR{animation:cheerR .3s infinite alternate}
+#knight.champ #rig{animation:jump .6s infinite}
+#knight.champ #jaw{animation:laugh .22s infinite}
+.howto{display:flex;flex-direction:column;gap:10px;font-size:18px;font-weight:700}.howto b{display:inline-flex;width:28px;height:28px;border-radius:50%;background:var(--org);color:#2a1450;align-items:center;justify-content:center;margin-right:8px}
+/* dialog */
+.talk{background:#ffffff12;border:2px solid #ffffff2a;border-radius:22px;padding:20px 22px;min-height:340px;display:flex;flex-direction:column;gap:14px}
+.bubble{background:#fff;color:#1d1233;border-radius:18px;padding:12px 16px;font-size:17px;font-weight:700;position:relative}
+.bubble.q{font-size:15px;color:#5b4a8a}
+.question{font-size:30px;font-weight:800;line-height:1.25;color:var(--org)}
+.note{font-size:15px;color:var(--sub);margin-top:-6px}
+.timer{height:8px;border-radius:6px;background:#ffffff1f;overflow:hidden}
+.timer i{display:block;height:100%;width:100%;background:var(--grn);transform-origin:left}
+.ans{background:#ffffff1a;border-radius:14px;padding:12px 16px;display:none}
+.ans.show{display:block}
+.ans .kr{font-size:30px;font-weight:800}.ans .ro{font-size:16px;color:var(--sub);font-style:italic}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:auto}
+.msg{font-size:26px;font-weight:800;text-align:center;margin:auto 0}
+.hint{color:var(--sub);font-size:13px;margin-top:6px}
+/* phone */
+.phoneWrap{display:flex;justify-content:center}
+.phone{width:380px;max-width:100%;min-height:560px;background:#0e0820;border:3px solid #ffffff2e;border-radius:36px;padding:22px 18px;display:flex;flex-direction:column;gap:12px;position:relative}
+.callTop{text-align:center;margin-top:20px}
+.avatar{width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,#ff8a2a,#ef4466);display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;margin:0 auto 12px}
+.ringing .avatar{animation:ring 1s infinite}
+@keyframes ring{0%{box-shadow:0 0 0 0 #ff8a2a99}100%{box-shadow:0 0 0 34px #ff8a2a00}}
+.cname{font-size:26px;font-weight:800}.cstat{color:var(--sub);font-size:15px}
+.acc{margin:auto auto 20px;display:flex;gap:40px}
+.round{width:68px;height:68px;border-radius:50%;border:0;font-size:28px;color:#fff;cursor:pointer}
+.chat{display:flex;flex-direction:column;gap:10px}
+.aunt{align-self:flex-start;background:#fff;color:#1d1233;border-radius:16px 16px 16px 4px;padding:10px 14px;font-size:16px;font-weight:700;max-width:88%}
+.me{align-self:flex-end;background:var(--pur);border-radius:16px 16px 4px 16px;padding:10px 14px;max-width:92%}
+.me .kr{font-size:21px;font-weight:800}.me .ro{font-size:13px;color:#e4dcff;font-style:italic}
+.prompt{background:#ffffff14;border:2px dashed var(--org);border-radius:14px;padding:12px 14px}
+.prompt small{color:var(--org);font-weight:800;letter-spacing:.06em}
+.prompt div{font-size:20px;font-weight:800;margin-top:4px}
+.hide{display:none!important}
+</style></head><body>
+<div class="wrap">
+ <div class="top">
+  <div class="logo" id="logo">⚔ <b>Derp</b> Knight</div>
+  <div class="tabs"><button class="tab on" data-p="boss">Boss Fight</button><button class="tab" data-p="call">Call Aunt</button></div>
+ </div>
+
+ <!-- BOSS -->
+ <section class="panel on" id="boss">
+  <div class="setup">
+   <span>Questions</span>
+   <select id="setSel"><option value="all">All mixed</option><option value="0">Words only</option><option value="1">Phrases only</option></select>
+   <select id="cntSel"><option value="3">3 questions</option><option value="5" selected>5 questions</option><option value="8">8 questions</option></select>
+   <label><input type="checkbox" id="timerOn" checked>15s timer</label>
+   <button id="startBtn">▶ New game</button>
+  </div>
+  <div class="arena">
+   <div class="stage">
+    <svg id="knight" viewBox="0 0 320 360" xmlns="http://www.w3.org/2000/svg">
+     <ellipse cx="160" cy="338" rx="105" ry="10" fill="#00000066"/>
+     <circle class="dust" cx="118" cy="330" r="14" fill="#cbb8ff"/><circle class="dust r" cx="204" cy="330" r="14" fill="#cbb8ff"/>
+     <g id="cape"><path d="M104 140 Q70 240 74 322 L96 308 L118 326 L140 306 L160 328 L182 306 L204 326 L226 308 L246 322 Q250 240 216 140 Z" fill="#4a1f99"/><path d="M104 140 Q92 230 98 300 L132 300 Q124 220 130 142Z" fill="#6a35c8" opacity=".55"/></g>
+     <g id="legL"><line x1="140" y1="236" x2="130" y2="284" stroke="#f4efe3" stroke-width="13" stroke-linecap="round"/><circle cx="130" cy="284" r="9" fill="#f4efe3"/><g id="shinL"><line x1="130" y1="284" x2="128" y2="318" stroke="#f4efe3" stroke-width="11" stroke-linecap="round"/><rect x="106" y="312" width="50" height="20" rx="8" fill="#3a3a52"/><rect x="98" y="322" width="22" height="10" rx="5" fill="#ff8a2a"/></g></g>
+     <g id="legR"><line x1="180" y1="236" x2="190" y2="284" stroke="#f4efe3" stroke-width="13" stroke-linecap="round"/><circle cx="190" cy="284" r="9" fill="#f4efe3"/><g id="shinR"><line x1="190" y1="284" x2="192" y2="318" stroke="#f4efe3" stroke-width="11" stroke-linecap="round"/><rect x="164" y="312" width="50" height="20" rx="8" fill="#3a3a52"/><rect x="200" y="322" width="22" height="10" rx="5" fill="#ff8a2a"/></g></g>
+     <g id="sag"><g id="rig">
+      <path d="M126 236 Q160 214 194 236 Q196 252 176 250 L160 244 L144 250 Q124 252 126 236Z" fill="#f4efe3"/>
+      <line x1="160" y1="148" x2="160" y2="236" stroke="#f4efe3" stroke-width="10" stroke-dasharray="9 3"/>
+      <g id="ribs" fill="none" stroke="#f4efe3" stroke-width="8" stroke-linecap="round"><path d="M160 162 Q108 154 114 178"/><path d="M160 162 Q212 154 206 178"/><path d="M160 178 Q108 170 114 194"/><path d="M160 178 Q212 170 206 194"/><path d="M160 194 Q108 186 114 210"/><path d="M160 194 Q212 186 206 210"/><path d="M160 210 Q108 202 114 226"/><path d="M160 210 Q212 202 206 226"/></g>
+      <g id="belt"><rect x="112" y="216" width="96" height="22" rx="6" fill="#7a3b12"/><rect x="112" y="216" width="96" height="22" rx="6" fill="none" stroke="#f5c542" stroke-width="2"/><ellipse cx="160" cy="227" rx="26" ry="18" fill="#f5c542" stroke="#b8891a" stroke-width="3"/><polygon points="160,213 164,223 175,223 166,230 170,241 160,234 150,241 154,230 145,223 156,223" fill="#ff8a2a" stroke="#b8891a" stroke-width="1.5"/></g>
+      <g id="armL"><line x1="108" y1="152" x2="82" y2="198" stroke="#f4efe3" stroke-width="11" stroke-linecap="round"/><circle cx="82" cy="198" r="8" fill="#f4efe3"/><line x1="82" y1="198" x2="92" y2="240" stroke="#f4efe3" stroke-width="10" stroke-linecap="round"/><circle cx="94" cy="248" r="14" fill="#f4efe3"/><path d="M86 244h16M86 250h16" stroke="#b9ae93" stroke-width="2"/></g>
+      <g id="armR"><line x1="212" y1="152" x2="244" y2="190" stroke="#f4efe3" stroke-width="11" stroke-linecap="round"/><circle cx="244" cy="190" r="8" fill="#f4efe3"/><line x1="244" y1="190" x2="262" y2="160" stroke="#f4efe3" stroke-width="10" stroke-linecap="round"/>
+       <g id="swordIn"><rect x="256" y="20" width="14" height="140" rx="4" fill="#d6dbf2"/><path d="M256 20l7-16 7 16z" fill="#d6dbf2"/><rect x="263" y="26" width="2" height="128" fill="#9aa1c4"/><rect x="242" y="158" width="42" height="9" rx="4" fill="#ff8a2a"/></g><circle cx="263" cy="172" r="11" fill="#f4efe3"/></g>
+      <g><ellipse cx="106" cy="150" rx="24" ry="17" fill="#3a3a52"/><path d="M92 138l-6-18 16 10zM110 133l-1-20 12 14z" fill="#ff8a2a"/><ellipse cx="214" cy="150" rx="24" ry="17" fill="#3a3a52"/><path d="M228 138l6-18-16 10zM210 133l1-20-12 14z" fill="#ff8a2a"/></g>
+      <g id="head">
+       <ellipse cx="160" cy="100" rx="40" ry="36" fill="#f4efe3"/>
+       <polygon points="124,88 152,100 150,114 126,108" fill="#1a0b33"/><polygon points="196,88 168,100 170,114 194,108" fill="#1a0b33"/>
+       <polygon class="glow" points="130,96 148,103 147,111 131,107" fill="#ff8a2a"/><polygon class="glow" points="190,96 172,103 173,111 189,107" fill="#ff8a2a"/>
+       <path d="M154 114l6 12 6-12z" fill="#1a0b33"/>
+       <g fill="#f4efe3" stroke="#b9ae93" stroke-width="1.5"><rect x="136" y="122" width="48" height="8" rx="2"/></g><path d="M142 122v8M150 122v8M160 122v8M170 122v8M178 122v8" stroke="#8d8368" stroke-width="2"/>
+       <g id="jaw"><path d="M138 130 Q160 160 182 130Z" fill="#f4efe3" stroke="#b9ae93" stroke-width="1.5"/><path d="M146 130v8M154 130v10M162 130v10M170 130v8" stroke="#8d8368" stroke-width="2"/></g>
+       <g id="helm"><path d="M114 98 Q108 44 160 40 Q212 44 206 98 Q160 80 114 98Z" fill="#8c8fa8"/><path d="M114 98 Q160 80 206 98 L204 108 Q160 92 116 108Z" fill="#6f7290"/><rect x="155" y="70" width="10" height="32" fill="#6f7290"/>
+        <path d="M118 66 Q86 58 80 22 Q106 40 132 56Z" fill="#f4efe3" stroke="#b9ae93" stroke-width="2"/><path d="M202 66 Q234 58 240 22 Q214 40 188 56Z" fill="#f4efe3" stroke="#b9ae93" stroke-width="2"/></g>
+      </g>
+     </g>
+     </g><g id="swordFall"><rect x="256" y="20" width="14" height="140" rx="4" fill="#d6dbf2"/><path d="M256 20l7-16 7 16z" fill="#d6dbf2"/><rect x="263" y="26" width="2" height="128" fill="#9aa1c4"/><rect x="242" y="158" width="42" height="9" rx="4" fill="#ff8a2a"/></g><g id="fx"></g>
+    </svg>
+   </div>
+   <div>
+    <div class="hud">
+     <div class="hp"><div class="hpName">DERP KNIGHT</div><div class="hpBar" id="hpBar"></div></div>
+     <div class="hearts" id="hearts"></div>
+    </div>
+    <div class="talk" id="talk"></div>
+   </div>
+  </div>
+ </section>
+
+ <!-- CALL -->
+ <section class="panel" id="call">
+  <div class="phoneWrap"><div class="phone" id="phone"></div></div>
+ </section>
+</div>
+
+<script>
+var SETS=[
+ [["Thanksgiving","추석","chu-seok"],["birthday (honorific)","생신","saeng-sin"],["holiday","명절","myeong-jeol"],["consecutive holidays","연휴","yeon-hyu"],["exam","시험","si-heom"],["10th grade","10학년","sip-ang-nyeon"]],
+ [["was busy","바빴어요","ba-ppa-sseo-yo"],["was late","늦었어요","neu-jeo-sseo-yo"],["couldn't go","못 갔어요","mot kka-sseo-yo"],["I contacted you (honorific)","연락드렸어요","yeol-lak-deu-ryeo-sseo-yo"],["because it's Thanksgiving","추석이라","chu-seo-gi-ra"],["Stay healthy!","건강하세요","geon-gang-ha-se-yo"],["Take care, bye (ending a call with an elder)","들어가세요","deu-reo-ga-se-yo"],["Thank you","감사합니다","gam-sa-ham-ni-da"],["Hello","안녕하세요","an-nyeong-ha-se-yo"],["Hello (answering the phone)","여보세요","yeo-bo-se-yo"],["How have you been?","잘 지내셨어요?","jal ji-nae-syeo-sseo-yo"],["I'll put (mom) on the phone","바꿔드릴게요","ba-kkwo-deu-ril-ge-yo"]]
+];
+var LINES={ask:["Behold! My ultimate question!","Say it in Korean. I dare you!","Ha! This one is impossible!","Try THIS, mortal!","Nobody has ever answered this!"],
+ hit:["NOOO! How did you know that?!","My helmet!!","Impossible!","Ow! My knee bone!","Stop being good at this!"],
+ miss:["HA! ...wait, I got lucky?","Too easy! ...right?","Derp Knight wins this round!","Hehe. Again later!"],
+ over:"Hahaha! ...ok wait, take your hearts back. I'm not ready to win yet.",
+ win:"...I lost. Again. See you next Thursday."};
+function $(i){return document.getElementById(i)}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function shuf(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+document.querySelectorAll('.tab').forEach(function(b){b.onclick=function(){
+ document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on')});b.classList.add('on');
+ document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on')});$(b.dataset.p).classList.add('on');$('logo').innerHTML=b.dataset.p==='call'?'📞 <b>Phone</b> Practice':'⚔ <b>Derp</b> Knight'}});
+
+/* ---- BOSS ---- */
+var STEPLINES={helmet:'NOOO! My helmet!!',sword:'My sword! That was my favorite!',cape:'My cape! It was brand new!',legR:'OW! My knee bone!!',armL:'My arm! Come back here!',legL:'My other knee!! Stop it!',ribs:'My ribs! Those tickle!'};
+var STEPS=['helmet','sword','cape','legR','armL','legL','ribs'];
+var G={q:[],hp:0,max:0,hearts:3,shown:false,over:false,tid:null,done:0};
+var knight=$('knight'),talk=$('talk');
+function flash(c){knight.classList.remove('hit','taunt');void knight.getBoundingClientRect();knight.classList.add(c);
+ if(c==='hit')bones();setTimeout(function(){knight.classList.remove('hit','taunt')},900)}
+function bones(){var fx=$('fx'),ns='http://www.w3.org/2000/svg',items=[];
+ for(var i=0;i<6;i++){var g=document.createElementNS(ns,'g');g.innerHTML='<line x1="-11" y1="0" x2="11" y2="0" stroke="#f4efe3" stroke-width="8" stroke-linecap="round"/><circle cx="-11" cy="0" r="5" fill="#f4efe3"/><circle cx="11" cy="0" r="5" fill="#f4efe3"/>';
+  fx.appendChild(g);items.push({g:g,x:150+Math.random()*30,y:190,vx:(Math.random()-.7)*9,vy:-6-Math.random()*6,r:0,vr:(Math.random()-.5)*30})}
+ var f=0;(function t(){f++;items.forEach(function(o){o.vy+=.7;o.x+=o.vx;o.y+=o.vy;o.r+=o.vr;o.g.setAttribute('transform','translate('+o.x+','+o.y+') rotate('+o.r+')')});
+  if(f<55)requestAnimationFrame(t);else fx.innerHTML=''})()}
+function drawHud(){
+ knight.classList.toggle('rage',G.hp>0&&G.hp<=2&&G.max>2);
+ $('hpBar').innerHTML='';for(var i=0;i<G.max;i++){var s=document.createElement('div');s.className='seg'+(i>=G.hp?' lost':'');$('hpBar').appendChild(s)}
+ var h='';for(var k=0;k<3;k++)h+='<span class="'+(k<G.hearts?'':'lost')+'">❤️</span>';$('hearts').innerHTML=h}
+function newGame(intro){
+ var pool=[];var sv=$('setSel').value;
+ (sv==='all'?SETS.reduce(function(a,b){return a.concat(b)},[]):SETS[+sv]).forEach(function(c){pool.push(c)});
+ var n=Math.min(+$('cntSel').value,pool.length);
+ G.q=shuf(pool).slice(0,n);G.max=G.hp=n;G.hearts=3;G.shown=false;G.over=false;
+ knight.setAttribute('class','');G.done=0;$('fx').innerHTML='';drawHud();if(intro===true)return showIntro();ask(true)}
+function showIntro(){
+ clearInterval(G.tid);G.over=false;
+ talk.innerHTML='<div class="bubble">So you think you can speak Korean? Let\'s see about that!</div>'+
+ '<div class="howto"><div><b>1</b> I show you an English word or phrase.</div><div><b>2</b> Say it in Korean, out loud.</div><div><b>3</b> Right answer: I take damage. Wrong answer: you lose a heart.</div></div>'+
+ '<div class="note">'+G.max+' questions · 3 hearts</div>'+
+ '<div class="row"><button class="btn b-go" id="go">Start battle ⚔</button></div>';
+ $('go').onclick=function(){ask()}}
+function ask(first){
+ clearInterval(G.tid);G.shown=false;
+ if(G.hp<=0){return win()}
+ var c=G.q[0];
+ talk.innerHTML='<div class="bubble">'+esc(pick(LINES.ask))+'</div>'+
+ '<div class="bubble q">Say this in Korean:</div><div class="question">'+esc(c[0])+'</div>'+
+ '<div class="timer" id="tm"><i id="tmi"></i></div>'+
+ '<div class="ans" id="ans"><div class="kr">'+esc(c[1])+'</div><div class="ro">'+esc(c[2])+'</div></div>'+
+ '<div class="row"><button class="btn b-rev" id="rev">Show answer (Space)</button><button class="btn b-ok" id="ok">Correct ✓ (→)</button><button class="btn b-no" id="no">Not yet ✗ (←)</button></div>'+
+ '<div class="hint">Say it out loud. The teacher presses Correct or Not yet. Missed cards come back later.</div>';
+ $('rev').onclick=reveal;$('ok').onclick=function(){judge(true)};$('no').onclick=function(){judge(false)};
+ startTimer()}
+function startTimer(){
+ var i=$('tmi');if(!$('timerOn').checked){$('tm').style.visibility='hidden';return}$('tm').style.visibility='visible';
+ var t0=Date.now();G.tid=setInterval(function(){var r=1-(Date.now()-t0)/15000;if(r<=0){r=0;clearInterval(G.tid);i.style.background='#ef4466'}
+  i.style.transform='scaleX('+r+')';i.style.background=r<.3?'#ef4466':(r<.6?'#ffb020':'#2fbf71')},50)}
+function reveal(){G.shown=!G.shown;$('ans').classList.toggle('show',G.shown);$('rev').textContent=G.shown?'Hide answer (Space)':'Show answer (Space)';if(G.shown)clearInterval(G.tid)}
+function judge(ok){
+ if(G.over)return;clearInterval(G.tid);var c=G.q.shift();
+ if(ok){G.hp--;drawHud();flash('hit');var st=(G.hp>0&&STEPS[G.done])?STEPS[G.done++]:null;if(st)knight.classList.add('d-'+st);
+  if(G.hp<=0){return win()}
+  say(st?STEPLINES[st]:pick(LINES.hit),'#2fbf71')}
+ else{G.q.push(c);G.hearts--;drawHud();flash('taunt');
+  if(G.hearts<=0){return lose()}
+  say(pick(LINES.miss),'#ef4466')}}
+function say(t,col,gameover){
+ talk.innerHTML='<div class="msg" style="color:'+col+'">'+esc(t)+'</div><div class="row"><button class="btn b-go" id="nx">Next ▶</button></div>';
+ $('nx').onclick=function(){ask()};}
+var TAUNTS=["Look, I even fixed my helmet. Good as new!","Nobody beats the Derp Knight. Nobody.","Hahaha! Even my cape is laughing at you.","Better luck next time, kid. Maybe study a little?","I'm the CHAMPION! Want a rematch, kid?"];
+function lose(){
+ G.over=true;clearInterval(G.tid);G.hearts=0;drawHud();knight.setAttribute('class','champ');$('fx').innerHTML='';
+ talk.innerHTML='<div class="msg" style="color:var(--red)">YOU LOSE 😈</div><div class="bubble">'+esc(pick(TAUNTS))+'</div><div class="row"><button class="btn b-go" id="again">Play again</button></div>';
+ $('again').onclick=newGame}
+function win(){
+ G.over=true;knight.classList.add('dead');
+ talk.innerHTML='<div class="msg" style="color:var(--org)">VICTORY 🎉</div><div class="bubble">'+esc(LINES.win)+'</div><div class="row"><button class="btn b-go" id="again">Play again</button></div>';
+ $('again').onclick=newGame}
+$('startBtn').onclick=function(){newGame(true)};
+$('setSel').onchange=$('cntSel').onchange=function(){newGame(true)};
+$('timerOn').onchange=function(){clearInterval(G.tid);var t=$('tm');if(!t)return;if(this.checked){if(!G.shown)startTimer();else t.style.visibility='visible'}else t.style.visibility='hidden'};
+document.addEventListener('keydown',function(e){
+ if(!$('boss').classList.contains('on')||!$('rev'))return;
+ if(e.code==='Space'){e.preventDefault();if($('rev'))reveal()}
+ else if(e.key==='ArrowRight'&&$('ok'))judge(true);
+ else if(e.key==='ArrowLeft'&&$('no'))judge(false)});
+newGame(true);
+
+/* ---- CALL ---- */
+var CALL=[
+ {a:null,en:"Hello, Aunt, it's me",kr:"여보세요, 이모 저예요",ro:"yeo-bo-se-yo, i-mo jeo-ye-yo"},
+ {a:"Oh, hi! It's been a while!",en:"How have you been?",kr:"잘 지내시죠?",ro:"jal ji-nae-si-jyo"},
+ {a:"I'm good! Which grade are you in now?",en:"I'm in 10th grade now",kr:"저는 이제 10학년이에요",ro:"jeo-neun i-je sip-ang-nyeon-i-e-yo"},
+ {a:"Wow, 10th grade already! Are you busy?",en:"I'm busy these days because of exams",kr:"시험이라 요즘 바빠요",ro:"si-heo-mi-ra yo-jeum ba-ppa-yo"},
+ {a:"Study hard! Is your mom home?",en:"Okay Aunt, I'll put my mom on",kr:"네 이모, 엄마 바꿔드릴게요",ro:"ne i-mo, eom-ma ba-kkwo-deu-ril-ge-yo"}
+];
+var C={i:0,sec:0,tid:null,shown:false};
+var phone=$('phone');
+function callStart(){clearInterval(C.tid);C.i=0;C.sec=0;
+ phone.innerHTML='<div class="callTop ringing"><div class="avatar" style="font-size:30px">Aunt</div><div class="cname">Aunt</div><div class="cstat">incoming call...</div></div>'+
+ '<div class="acc"><button class="round" style="background:#2fbf71" id="acc">📞</button></div>'+
+ '<div class="hint" style="text-align:center">Tap the green button to answer</div>';
+ $('acc').onclick=callTalk}
+function mmss(){var m=Math.floor(C.sec/60),s=C.sec%60;return m+':'+(s<10?'0':'')+s}
+function callTalk(){
+ C.sec=0;C.shown=false;clearInterval(C.tid);C.tid=setInterval(function(){C.sec++;var t=$('ctime');if(t)t.textContent=mmss()},1000);renderStep()}
+var hist=[];
+function renderStep(){
+ if(C.i===0)hist=[];
+ var s=CALL[C.i];
+ var h='<div style="text-align:center"><div class="cname" style="font-size:20px">Aunt</div><div class="cstat" id="ctime">'+mmss()+'</div></div><div class="chat" id="chat">';
+ hist.forEach(function(x){h+=x});
+ if(s.a)h+='<div class="aunt">'+esc(s.a)+'</div>';
+ h+='</div><div class="prompt"><small>YOUR TURN · '+(C.i+1)+' / '+CALL.length+'</small><div>'+esc(s.en)+'</div></div>'+
+ '<div class="ans" id="cans" style="background:#ffffff1a"><div class="kr" style="font-size:24px">'+esc(s.kr)+'</div><div class="ro">'+esc(s.ro)+'</div></div>'+
+ '<div class="row" style="margin-top:auto"><button class="btn b-rev" id="crev">Show answer</button><button class="btn b-go hide" id="cnx">'+(C.i===CALL.length-1?'Great job!':'Next')+' ▶</button></div>';
+ phone.innerHTML=h;
+ $('crev').onclick=function(){$('cans').classList.add('show');$('crev').classList.add('hide');$('cnx').classList.remove('hide')};
+ $('cnx').onclick=function(){
+  if(s.a)hist.push('<div class="aunt">'+esc(s.a)+'</div>');
+  hist.push('<div class="me"><div class="kr">'+esc(s.kr)+'</div><div class="ro">'+esc(s.ro)+'</div></div>');
+  C.i++;if(C.i>=CALL.length)return callEnd();renderStep()}}
+function callEnd(){clearInterval(C.tid);
+ phone.innerHTML='<div class="callTop"><div class="avatar" style="font-size:48px">🎉</div><div class="cname">Great job!</div><div class="cstat">You passed the phone to Mom</div></div>'+
+ '<div class="msg" style="font-size:20px;color:var(--org)">The call keeps going, but your part is done.</div>'+
+ '<div class="acc" style="margin-top:auto"><button class="btn b-go" id="rc">Try again</button></div>';
+ $('rc').onclick=callStart}
+callStart();
+</script></body></html>
