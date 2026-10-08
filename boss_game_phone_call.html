@@ -313,19 +313,21 @@ function ask(first){
  startTimer()}
 function startTimer(){
  var i=$('tmi');if(!$('timerOn').checked){$('tm').style.visibility='hidden';return}$('tm').style.visibility='visible';
- var t0=Date.now();G.tid=setInterval(function(){var r=1-(Date.now()-t0)/15000;if(r<=0){r=0;clearInterval(G.tid);i.style.background='#ef4466'}
+ var t0=Date.now();G.tid=setInterval(function(){var r=1-(Date.now()-t0)/15000;if(r<=0){r=0;clearInterval(G.tid);i.style.transform='scaleX(0)';i.style.background='#ef4466';return timeUp()}
   i.style.transform='scaleX('+r+')';i.style.background=r<.3?'#ef4466':(r<.6?'#ffb020':'#2fbf71')},50)}
 function reveal(){G.shown=!G.shown;$('ans').classList.toggle('show',G.shown);$('rev').textContent=G.shown?'Hide answer (Space)':'Show answer (Space)';if(G.shown)clearInterval(G.tid)}
-function judge(ok){
+function timeUp(){if(G.over||G.shown)return;judge(false,true)}
+function judge(ok,timeout){
  if(G.over)return;clearInterval(G.tid);var c=G.q.shift();
  if(ok){G.hp--;drawHud();flash('hit');var st=(G.hp>0&&STEPS[G.done])?STEPS[G.done++]:null;if(st)knight.classList.add('d-'+st);if(G.hp>0)sfx('hit');if(st)setTimeout(function(){sfx(PARTSFX[st])},160);
   if(G.hp<=0){return win()}
   say(st?STEPLINES[st]:pick(LINES.hit),'#2fbf71')}
  else{G.q.push(c);G.hearts--;drawHud();flash('taunt');sfx('wrong');
   if(G.hearts<=0){return lose()}
-  say(pick(LINES.miss),'#ef4466')}}
-function say(t,col,gameover){
- talk.innerHTML='<div class="msg" style="color:'+col+'">'+esc(t)+'</div><div class="row"><button class="btn b-go" id="nx">Next ▶</button></div>';
+  if(timeout){say("⏰ Time's up! "+pick(LINES.miss),'#ef4466',false,'<div class="ans show"><div class="kr">'+esc(c[1])+'</div><div class="ro">'+esc(c[2])+'</div></div>')}
+  else say(pick(LINES.miss),'#ef4466')}}
+function say(t,col,gameover,extra){
+ talk.innerHTML='<div class="msg" style="color:'+col+'">'+esc(t)+'</div>'+(extra||'')+'<div class="row"><button class="btn b-go" id="nx">Next ▶</button></div>';
  $('nx').onclick=function(){ask()};}
 var TAUNTS=["Look, I even fixed my helmet. Good as new!","Nobody beats the Derp Knight. Nobody.","Hahaha! Even my cape is laughing at you.","Better luck next time, kid. Maybe study a little?","I'm the CHAMPION! Want a rematch, kid?"];
 function lose(){
