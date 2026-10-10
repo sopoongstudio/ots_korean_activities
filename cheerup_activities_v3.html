@@ -2822,15 +2822,17 @@ const MAD=[
    {h:'What  (already 면 form)',items:[['예쁘면','be pretty'],['잘생기면','be handsome'],['똑똑하면','be smart'],['웃으면','laugh'],['치킨 먹으면','eat chicken'],['춤추면','dance'],['노래하면','sing'],['답장하면','text back']]}],
   make:(a,b)=>({ko:`${a[0]} <span class="gr">${b[0]} 안 돼</span>`,plain:`${a[0]} ${b[0]} 안 돼`,en:`You can't ${b[1]} ${a[1]}.`})},
  {title:'Line 2',slots:[
-   {h:'-는  (I ...)',items:[['좋아하는','like'],['매일 보는','see every day'],['자주 만나는','often meet'],['무서워하는','am scared of'],['싫어하는','hate']]},
-   {h:'Who',items:[['선생님','teacher'],['썸남','crush'],['엄마','Mom'],['고양이','cat'],['강아지','puppy'],['옆집 아저씨','neighbor guy']]}],
-  make:(a,b)=>({ko:`<span class="fix">내가</span> <span class="gr">${a[0]}</span> ${b[0]} <span class="fix">모르게</span>`,plain:`내가 ${a[0]} ${b[0]} 모르게`,en:`Without the ${b[1]} I ${a[1]} knowing`})},
+   {h:'-는  (I ...)',items:[['좋아하는','like'],['바라보는','look at'],['응원하는','cheer for'],['기다리는','wait for'],['따라가는','follow'],['먹는','eat','c'],['혼내는','scold','c'],['놀리는','tease','c']]},
+   {h:'Who',items:[['스폰지밥','SpongeBob'],['슈렉','Shrek'],['고라파덕','Psyduck'],['피카츄','Pikachu'],['헬로키티','Hello Kitty'],['뽀로로','Pororo'],['블랙핑크','BLACKPINK','i'],['BTS','BTS','i'],['트와이스','TWICE','i'],['투바투','TXT','i'],['뉴진스','NewJeans','i']]}],
+  ok:(a,b)=>!(a[2]==='c'&&b[2]==='i'),
+  make:(a,b)=>({ko:`<span class="fix">내가</span> <span class="gr">${a[0]}</span> ${b[0]} <span class="fix">모르게</span>`,plain:`내가 ${a[0]} ${b[0]} 모르게`,en:`Without ${b[1]} (the one I ${a[1]}) knowing`})},
  {title:'Line 3',slots:[
-   {h:'How',items:[['태연하게','calmly'],['아무렇지 않게','like it\'s nothing'],['조용히','quietly'],['혼자','alone'],['몰래','secretly']]},
-   {h:'I\'ll ...  (ㄹ래 form)',items:[['춤출래','dance'],['먹을래','eat'],['잘래','sleep'],['노래할래','sing'],['도망갈래','run away'],['울래','cry']]}],
+   {h:'How',items:[['갑자기','suddenly'],['크게','loudly'],['천천히','slowly'],['빨리','quickly'],['태연하게','coolly'],['아무렇지 않게','like it\'s nothing']]},
+   {h:'I\'ll ...  (ㄹ래 form)',items:[['춤출래','dance'],['먹을래','eat'],['잘래','sleep'],['노래할래','sing'],['도망갈래','run away'],['울래','cry'],['웃을래','laugh'],['달릴래','run']]}],
   make:(a,b)=>({ko:`${a[0]} <span class="gr">${b[0]}</span>`,plain:`${a[0]} ${b[0]}`,en:`I'll ${b[1]} ${a[1]}.`})}
 ];
 const sel=MAD.map(m=>m.slots.map(()=>null));
+function rndSel(m){let r;for(let k=0;k<30;k++){r=m.slots.map(x=>pick(x.items));if(!m.ok||m.ok(...r))break;}return r;}
 const EMPTY=['___','___'];
 function drawMad(li){
   const m=MAD[li],box=document.getElementById('mad-'+li);
@@ -2840,7 +2842,7 @@ function drawMad(li){
    <div class="row" style="margin-bottom:12px"><button class="btn" data-r>🎲 Random</button><button class="btn ghost" data-x>↺ Reset</button></div>
    <div class="save" id="save-${li}"></div>`;
   box.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{sel[li][+c.dataset.si]=m.slots[+c.dataset.si].items[+c.dataset.ii];drawMad(li);});
-  box.querySelector('[data-r]').onclick=()=>{sel[li]=m.slots.map(s=>pick(s.items));drawMad(li);};
+  box.querySelector('[data-r]').onclick=()=>{sel[li]=rndSel(m);drawMad(li);};
   box.querySelector('[data-x]').onclick=()=>{sel[li]=m.slots.map(()=>null);drawMad(li);};
   const r=m.make(...sel[li].map(x=>x||EMPTY));
   document.getElementById('out-'+li).innerHTML=`<div class="ko">${r.ko}</div><div class="en">${r.en}</div>`;
@@ -2892,7 +2894,7 @@ function trophy(i){
 }
 function randomFill(){
   const upd={};
-  students.forEach(s=>{s.lines=s.lines.map((l,li)=>{if(l)return l;const r=MAD[li].make(...MAD[li].slots.map(x=>pick(x.items)));const v={ko:r.plain,en:r.en};(upd[s.id]=upd[s.id]||{})[li]=v;return v;});});
+  students.forEach(s=>{s.lines=s.lines.map((l,li)=>{if(l)return l;const r=MAD[li].make(...rndSel(MAD[li]));const v={ko:r.plain,en:r.en};(upd[s.id]=upd[s.id]||{})[li]=v;return v;});});
   if(Object.keys(upd).length)fbMerge({lines:upd});
   renderBoard();refreshSave();toast('Empty lines filled 🎲');
 }
