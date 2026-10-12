@@ -1,0 +1,592 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mom Calls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: one phone centered on the page, a quiet teacher strip underneath.
+   Mom = blue voice bars, Joshua = orange wave plus the word to say. */
+:root {
+  --bg: #EAF3FF;
+  --fg: #1F2A44;
+  --muted: #5C6B8A;
+  --accent: #2A72D8;
+  --accent-fg: #FFFFFF;
+  --warm: #F28C38;
+  --surface: #FFFFFF;
+  --line: #C9DDF5;
+  --phone: #1F2A44;
+  --screen-top: #27407A;
+  --screen-bot: #121B36;
+  --voice: #8FC1FF;
+  --good: #2E7D50;
+  --bad: #C0443F;
+  --font-ui: "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1630;
+    --fg: #E6EEFF;
+    --muted: #8FA3C8;
+    --accent: #5B97EE;
+    --accent-fg: #0E1630;
+    --surface: #1A2748;
+    --line: #2A3A66;
+    --phone: #060B1A;
+    --screen-top: #22376B;
+    --screen-bot: #0C1328;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1630;
+  --fg: #E6EEFF;
+  --muted: #8FA3C8;
+  --accent: #5B97EE;
+  --accent-fg: #0E1630;
+  --surface: #1A2748;
+  --line: #2A3A66;
+  --phone: #060B1A;
+  --screen-top: #22376B;
+  --screen-bot: #0C1328;
+  color-scheme: dark;
+}
+
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-inline: 16px;
+  padding-block: 16px;
+  box-sizing: border-box;
+}
+
+.stage {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- phone ---------- */
+.phone {
+  container-type: size;
+  height: 100%;
+  max-height: 660px;
+  aspect-ratio: 9 / 18;
+  max-width: 100%;
+  background: var(--phone);
+  border-radius: 12% / 6%;
+  position: relative;
+  box-shadow: 0 18px 40px rgba(20, 40, 90, 0.28);
+}
+.phone.ringing { animation: buzz 0.9s infinite; }
+@keyframes buzz {
+  0%, 60%, 100% { transform: translateX(0) rotate(0); }
+  8% { transform: translateX(-1.2%) rotate(-0.8deg); }
+  16% { transform: translateX(1.2%) rotate(0.8deg); }
+  24% { transform: translateX(-1.2%) rotate(-0.8deg); }
+  32% { transform: translateX(1.2%) rotate(0.8deg); }
+  40% { transform: translateX(-0.8%) rotate(-0.5deg); }
+  48% { transform: translateX(0.8%) rotate(0.5deg); }
+}
+
+.screen {
+  position: absolute;
+  inset: 2.6cqw;
+  border-radius: 9.6cqw;
+  overflow: hidden;
+  background: linear-gradient(170deg, var(--screen-top), var(--screen-bot));
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9cqw 6cqw 8cqw;
+  box-sizing: border-box;
+}
+
+.caller { display: flex; flex-direction: column; align-items: center; gap: 1.2cqw; text-align: center; }
+.avatar {
+  width: 25cqw; height: 25cqw; border-radius: 50%;
+  background: linear-gradient(145deg, #F7A35C, #E4772A);
+  display: grid; place-items: center;
+  font-size: 12cqw; font-weight: 900; color: #fff;
+  margin-bottom: 2cqw;
+  position: relative;
+}
+.ringing .avatar::before, .ringing .avatar::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: 0.8cqw solid rgba(247, 163, 92, 0.65);
+  animation: pulse 1.6s ease-out infinite;
+}
+.ringing .avatar::after { animation-delay: 0.8s; }
+@keyframes pulse { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.7); opacity: 0; } }
+.name { font-size: 9cqw; font-weight: 700; line-height: 1.1; }
+.name-en { font-size: 4.4cqw; color: var(--voice); letter-spacing: 0.04em; }
+.status { font-size: 4.6cqw; color: rgba(255,255,255,0.78); margin-top: 1cqw; font-variant-numeric: tabular-nums; min-height: 1.3em; }
+
+.mid { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4.5cqw; }
+.cue {
+  background: #fff; color: #1F2A44;
+  border-radius: 6cqw; padding: 3.6cqw 8cqw 4cqw;
+  text-align: center; min-width: 52cqw;
+  box-shadow: 0 1.5cqw 4cqw rgba(0,0,0,0.25);
+}
+.cue-tag { font-size: 3.4cqw; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #2A72D8; }
+.cue-word { font-size: 19cqw; font-weight: 900; line-height: 1.15; margin-top: 0.5cqw; }
+.cue-gloss { font-size: 4.4cqw; color: #5C6B8A; margin-top: 0.5cqw; }
+#wave { width: 100%; height: 20cqh; display: block; }
+
+.bottom { min-height: 20cqw; display: flex; align-items: center; justify-content: center; width: 100%; }
+.ringbtns { display: flex; justify-content: space-between; width: 70%; }
+.circle {
+  width: 17cqw; height: 17cqw; border-radius: 50%; border: 0;
+  display: grid; place-items: center; color: #fff;
+}
+.circle svg { width: 8cqw; height: 8cqw; fill: currentColor; }
+.circle.accept { background: var(--good); cursor: pointer; }
+.circle.decline { background: var(--bad); }
+.circle.decline svg { transform: rotate(135deg); }
+.end { background: var(--bad); cursor: default; opacity: 0.55; }
+.end svg { transform: rotate(135deg); }
+.end:not(:disabled) { opacity: 1; cursor: pointer; animation: ready 1.2s ease-in-out infinite; }
+@keyframes ready {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(192, 68, 63, 0.7); }
+  50% { box-shadow: 0 0 0 3.2cqw rgba(192, 68, 63, 0); }
+}
+
+/* lock screen after the call, with the quick-settings panel that slides down */
+.lock {
+  position: absolute; inset: 0;
+  background: linear-gradient(170deg, #1B2C57, #0A1024);
+  display: flex; flex-direction: column; align-items: center; padding-top: 24cqw; gap: 1.5cqw;
+  animation: fadein 0.45s ease both;
+}
+.lock .clock { font-size: 22cqw; font-weight: 300; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+.lock .date { font-size: 4.6cqw; color: rgba(255,255,255,0.7); }
+.qs {
+  position: absolute; left: 0; right: 0; top: 0;
+  background: rgba(24, 34, 66, 0.97);
+  border-bottom-left-radius: 8cqw; border-bottom-right-radius: 8cqw;
+  padding: 9cqw 6cqw 6cqw; box-sizing: border-box;
+  display: flex; justify-content: space-around; gap: 3cqw;
+  transform: translateY(-105%);
+  transition: transform 0.5s cubic-bezier(.2,.8,.2,1);
+  box-shadow: 0 3cqw 6cqw rgba(0,0,0,0.4);
+}
+.qs.open { transform: translateY(0); }
+.tile { display: flex; flex-direction: column; align-items: center; gap: 2cqw; font-size: 3.8cqw; color: rgba(255,255,255,0.8); width: 24cqw; text-align: center; }
+.tile .ico {
+  width: 17cqw; height: 17cqw; border-radius: 50%;
+  background: rgba(255,255,255,0.14);
+  display: grid; place-items: center;
+  transition: background 0.3s ease;
+}
+.tile .ico svg { width: 8cqw; height: 8cqw; fill: #fff; }
+.tile .ico svg.stroke { fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tile.on .ico { background: var(--accent); }
+.tile.on .ico svg.stroke { stroke: #fff; }
+#tileSound .bell-off { display: none; }
+#tileSound.on .bell { display: none; }
+#tileSound.on .bell-off { display: block; }
+
+.off {
+  position: absolute; inset: 0; background: #000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2cqw;
+  animation: fadein 0.5s ease both;
+}
+.off .laugh { font-size: 26cqw; font-weight: 900; color: #fff; letter-spacing: 0.02em; }
+.off .gloss { font-size: 5cqw; color: #8C95AD; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- teacher strip ---------- */
+.teacher {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 10px 16px; width: 100%; max-width: 560px;
+}
+.primary {
+  font: inherit; font-weight: 700; font-size: 15px;
+  background: var(--accent); color: var(--accent-fg);
+  border: 0; border-radius: 10px; padding: 10px 20px; cursor: pointer;
+  min-width: 190px;
+}
+.primary:disabled { opacity: 0.45; cursor: default; }
+.link {
+  font: inherit; font-size: 13px; color: var(--muted);
+  background: none; border: 0; padding: 8px 6px; cursor: pointer; text-decoration: underline;
+}
+.hint { font-size: 13px; color: var(--muted); min-width: 0; text-align: center; }
+button:focus-visible { outline: 3px solid var(--warm); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .phone.ringing { animation: none; }
+  .ringing .avatar::before, .ringing .avatar::after { animation: none; }
+  .end:not(:disabled) { animation: none; }
+  .off { animation: none; }
+}
+</style>
+
+<main class="stage">
+  <div class="phone" id="phone">
+    <div class="screen">
+      <div class="caller">
+        <div class="avatar" aria-hidden="true">엄</div>
+        <div class="name">엄마</div>
+        <div class="name-en">Mom</div>
+        <div class="status" id="status">Ready</div>
+      </div>
+
+      <div class="mid">
+        <div class="cue" id="cue" hidden>
+          <div class="cue-tag">Your turn</div>
+          <div class="cue-word" id="cueWord">네</div>
+          <div class="cue-gloss" id="cueGloss">Yes</div>
+        </div>
+        <canvas id="wave" aria-hidden="true"></canvas>
+      </div>
+
+      <div class="bottom">
+        <div class="ringbtns" id="ringBtns" hidden>
+          <span class="circle decline" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></span>
+          <button class="circle accept" id="acceptBtn" aria-label="Answer"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button>
+        </div>
+        <button class="circle end" id="endBtn" aria-label="End call" disabled hidden>
+          <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+        </button>
+      </div>
+
+      <div class="lock" id="lock" hidden>
+        <div class="clock" id="clock">9:41</div>
+        <div class="date" id="date"></div>
+      </div>
+
+      <div class="qs" id="qs" aria-hidden="true">
+        <div class="tile on"><span class="ico"><svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg></span><span>Wi-Fi</span></div>
+        <div class="tile" id="tileSound"><span class="ico">
+          <svg class="bell stroke" viewBox="0 0 24 24"><path d="M18 16v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1z"/><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/></svg>
+          <svg class="bell-off stroke" viewBox="0 0 24 24"><path d="M18 16v-5c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1z"/><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/><path d="M3 3l18 18"/></svg>
+        </span><span id="soundLabel">Sound</span></div>
+        <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z"/></svg></span><span>Saver</span></div>
+      </div>
+
+      <div class="off" id="off" hidden>
+        <div class="laugh">ㅋㅋ</div>
+        <div class="gloss">lol</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="teacher">
+  <button class="primary" id="nextBtn">Start call</button>
+  <span class="hint" id="hint">Space = next</span>
+  <button class="link" id="restartBtn">Restart (R)</button>
+</div>
+
+<script>
+/* ===== Sound: everything is synthesized, no audio files ===== */
+function makeEngine(c) {
+  const master = c.createGain(); master.gain.value = 0.9; master.connect(c.destination);
+
+  // Mom's voice goes through a phone-line filter, then the analyser that draws the bars.
+  const analyser = c.createAnalyser(); analyser.fftSize = 1024; analyser.smoothingTimeConstant = 0;
+  const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3400;
+  const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 300;
+  const voice = c.createGain();
+  const voiceOut = c.createGain(); voiceOut.gain.value = 0.12; // mom stays in the background; the bars still read full level
+  voice.connect(hp); hp.connect(lp); lp.connect(analyser); analyser.connect(voiceOut); voiceOut.connect(master);
+
+  const nb = c.createBuffer(1, Math.floor(c.sampleRate * 0.2), c.sampleRate);
+  const nd = nb.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+
+  // vowel-like formant pairs: a, e, i, o, u, eo
+  const VOW = [[800, 1250], [550, 1800], [320, 2300], [500, 950], [350, 800], [650, 1500]];
+
+  function syl(t, dur, f0, f0End, amp, breath) {
+    const v = VOW[Math.floor(Math.random() * VOW.length)];
+    const o = c.createOscillator(); o.type = 'sawtooth';
+    o.frequency.setValueAtTime(f0, t);
+    o.frequency.linearRampToValueAtTime(f0End, t + dur);
+    const e = c.createGain();
+    const atk = Math.min(0.03, dur * 0.3);
+    e.gain.setValueAtTime(0.0001, t);
+    e.gain.linearRampToValueAtTime(amp, t + atk);
+    e.gain.setValueAtTime(amp, t + dur * 0.6);
+    e.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    [[v[0], 7, 1], [v[1], 9, 0.55]].forEach(([f, q, gv]) => {
+      const bp = c.createBiquadFilter(); bp.type = 'bandpass';
+      bp.frequency.value = f * (0.95 + Math.random() * 0.1); bp.Q.value = q;
+      const g = c.createGain(); g.gain.value = gv * 4;
+      o.connect(bp); bp.connect(g); g.connect(e);
+    });
+    e.connect(voice);
+    o.start(t); o.stop(t + dur + 0.02);
+    if (breath) {
+      const n = c.createBufferSource(); n.buffer = nb;
+      const nf = c.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 2600; nf.Q.value = 1.2;
+      const ng = c.createGain();
+      ng.gain.setValueAtTime(0.3, t); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+      n.connect(nf); nf.connect(ng); ng.connect(voice);
+      n.start(t); n.stop(t + 0.06);
+    }
+  }
+
+  // slow and short / fast and long / one short word
+  const MUMBLE = {
+    m1: { d: 0.21, base: 215, phrases: [2, 2], gap: 0.2, fall: 0.05 },
+    m2: { d: 0.088, base: 228, phrases: [8, 9], gap: 0.12, fall: 0.06 },
+    m3: { d: 0.17, base: 205, phrases: [2], gap: 0, fall: 0.3 }
+  };
+  function mumble(kind, t0) {
+    const m = MUMBLE[kind]; let t = t0;
+    m.phrases.forEach((k) => {
+      for (let i = 0; i < k; i++) {
+        const prog = i / k;
+        const f0 = m.base * (1.12 - 0.25 * prog) * (0.97 + Math.random() * 0.06);
+        const dur = m.d * (0.8 + Math.random() * 0.5);
+        syl(t, dur, f0, f0 * (0.94 - m.fall), 0.5, Math.random() < 0.5);
+        t += dur * 1.04 + 0.012;
+      }
+      t += m.gap;
+    });
+    return t - t0;
+  }
+
+  function ping(t, f) {
+    const o = c.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.55, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.12);
+  }
+  function ring(t) {
+    [0, 0.62].forEach((off) => {
+      for (let k = 0; k < 4; k++) { ping(t + off + k * 0.14, 1046.5); ping(t + off + k * 0.14, 1318.5); }
+    });
+  }
+  function endTone(t) {
+    for (let k = 0; k < 3; k++) {
+      const s = t + k * 0.28;
+      const o = c.createOscillator(); o.type = 'sine'; o.frequency.value = 440;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.0001, s);
+      g.gain.linearRampToValueAtTime(0.7, s + 0.01);
+      g.gain.setValueAtTime(0.7, s + 0.14);
+      g.gain.linearRampToValueAtTime(0.0001, s + 0.16);
+      o.connect(g); g.connect(master); o.start(s); o.stop(s + 0.18);
+    }
+    return 0.28 * 2 + 0.16;
+  }
+  return { ring, mumble, endTone, analyser };
+}
+window.__makeEngine = makeEngine;
+
+/* ===== Flow ===== */
+const $ = (s) => document.querySelector(s);
+const phone = $('#phone'), statusEl = $('#status'), cue = $('#cue'), cueWord = $('#cueWord'), cueGloss = $('#cueGloss');
+const ringBtns = $('#ringBtns'), endBtn = $('#endBtn'), lock = $('#lock'), qs = $('#qs'), off = $('#off');
+const tileSound = $('#tileSound'), soundLabel = $('#soundLabel');
+const nextBtn = $('#nextBtn'), hint = $('#hint'), restartBtn = $('#restartBtn');
+const cv = $('#wave'), g2 = cv.getContext('2d');
+
+let ctx = null, eng = null;
+let phase = 'idle', busy = false, mode = 'idle';
+let ringId = null, clockId = null, callStart = 0;
+const timers = [];
+const later = (fn, ms) => { const id = setTimeout(fn, ms); timers.push(id); return id; };
+
+const CUE = {
+  ring: ['네', 'Yes'],
+  c1: ['네~', 'Yes / got it'],
+  c2: ['네~ 네', 'Yes / got it'],
+  c3: ['네~', 'Yes / got it']
+};
+const NEXT = { // button label and the line for the teacher
+  idle:  ['Start call', 'Phone rings. Joshua answers with 네.'],
+  ring:  ['He said 네', 'Press when Joshua has answered.'],
+  mom:   ['Mom is talking', 'Wait for the bars to stop.'],
+  c1:    ['Mom talks (fast)', 'Joshua says 네~. Then press.'],
+  c2:    ['Mom talks (short)', 'Joshua says 네~ 네. Then press.'],
+  c3:    ['Mom hangs up', 'Joshua says 네~. Then press.'],
+  ending:['Mom is hanging up', ''],
+  ended: ['Joshua hangs up', 'Mom hung up first. Now Joshua ends the call.'],
+  off:   ['Play again', '']
+};
+
+function fmt(s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function startClock() {
+  callStart = Date.now();
+  clearInterval(clockId);
+  clockId = setInterval(() => { statusEl.textContent = fmt(Math.floor((Date.now() - callStart) / 1000)); }, 250);
+  statusEl.textContent = '0:00';
+}
+function stopClock() { clearInterval(clockId); clockId = null; }
+
+function setPhase(p) {
+  phase = p;
+  const isCue = p in CUE;
+  cue.hidden = !isCue;
+  if (isCue) { cueWord.textContent = CUE[p][0]; cueGloss.textContent = CUE[p][1]; }
+  mode = p === 'mom' ? 'mom' : (isCue ? 'you' : 'idle');
+  phone.classList.toggle('ringing', p === 'ring');
+  ringBtns.hidden = p !== 'ring';
+  const inCall = ['mom', 'c1', 'c2', 'c3', 'ending', 'ended'].includes(p);
+  endBtn.hidden = !inCall;
+  endBtn.disabled = p !== 'ended';
+  const L = NEXT[p] || ['Next', ''];
+  nextBtn.textContent = L[0];
+  nextBtn.disabled = busy || p === 'mom' || p === 'ending';
+  hint.textContent = L[1] || '';
+}
+
+function audioOn() {
+  if (!ctx) {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    eng = makeEngine(ctx);
+  }
+  if (ctx.state === 'suspended') ctx.resume();
+}
+
+function startRing() {
+  audioOn();
+  statusEl.textContent = 'Incoming call';
+  setPhase('ring');
+  eng.ring(ctx.currentTime + 0.05);
+  ringId = setInterval(() => eng.ring(ctx.currentTime + 0.05), 2600);
+}
+
+function momSays(kind, after) {
+  busy = true; setPhase('mom');
+  hist.fill(0);
+  const dur = eng.mumble(kind, ctx.currentTime + 0.35);
+  later(() => { busy = false; setPhase(after); }, (dur + 0.35) * 1000 + 250);
+}
+
+function answer() {
+  clearInterval(ringId); ringId = null;
+  startClock();
+  momSays('m1', 'c1');
+}
+
+function finishCall() {
+  busy = true; setPhase('ending'); statusEl.textContent = stopClockText();
+  later(() => {
+    const d = eng.endTone(ctx.currentTime + 0.05);
+    later(() => { statusEl.textContent = 'Call ended'; busy = false; setPhase('ended'); }, d * 1000 + 350);
+  }, 700);
+}
+function stopClockText() { stopClock(); return statusEl.textContent; }
+
+function hangUp() {
+  if (phase !== 'ended' || busy) return;
+  busy = true; nextBtn.disabled = true; endBtn.disabled = true;
+  hint.textContent = 'Joshua turns the phone to silent.';
+  const now = new Date();
+  $('#clock').textContent = (now.getHours() % 12 || 12) + ':' + String(now.getMinutes()).padStart(2, '0');
+  $('#date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  lock.hidden = false;                                    // call screen turns into the lock screen
+  later(() => qs.classList.add('open'), 1100);            // quick settings slide down
+  later(() => { tileSound.classList.add('on'); soundLabel.textContent = 'Silent'; }, 1900);  // silent switches on
+  later(() => qs.classList.remove('open'), 3500);         // panel slides back up
+  later(() => {
+    off.hidden = false; busy = false;                     // then the screen goes dark: ㅋㅋ
+    setPhase('off'); statusEl.textContent = '';
+  }, 4700);
+}
+
+function reset() {
+  timers.splice(0).forEach(clearTimeout);
+  clearInterval(ringId); ringId = null; stopClock();
+  busy = false; lock.hidden = true; off.hidden = true;
+  qs.classList.remove('open'); tileSound.classList.remove('on'); soundLabel.textContent = 'Sound';
+  statusEl.textContent = 'Ready';
+  setPhase('idle');
+}
+
+function next() {
+  if (busy) return;
+  switch (phase) {
+    case 'idle':  startRing(); break;
+    case 'ring':  answer(); break;
+    case 'c1':    audioOn(); momSays('m2', 'c2'); break;
+    case 'c2':    audioOn(); momSays('m3', 'c3'); break;
+    case 'c3':    finishCall(); break;
+    case 'ended': hangUp(); break;
+    case 'off':   reset(); break;
+  }
+}
+
+nextBtn.addEventListener('click', next);
+endBtn.addEventListener('click', hangUp);
+$('#acceptBtn').addEventListener('click', () => { if (phase === 'ring') next(); });
+restartBtn.addEventListener('click', reset);
+document.addEventListener('keydown', (e) => {
+  const t = e.target;
+  if (t && (t.tagName === 'BUTTON' || t.tagName === 'A')) return;
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); next(); }
+  else if (e.key === 'r' || e.key === 'R') { reset(); }
+});
+
+/* ===== Waveform: Mom = voice bars, Joshua = orange wave ===== */
+const N = 34, hist = new Array(N).fill(0);
+const td = new Uint8Array(1024);
+function fit() {
+  const r = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(cv.clientWidth * r)), h = Math.max(1, Math.round(cv.clientHeight * r));
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+}
+function rr(x, y, w, h, r) {
+  g2.beginPath();
+  if (g2.roundRect) g2.roundRect(x, y, w, h, r); else g2.rect(x, y, w, h);
+  g2.fill();
+}
+function draw(t) {
+  fit();
+  const w = cv.width, h = cv.height;
+  g2.clearRect(0, 0, w, h);
+  if (mode === 'mom' && eng) {
+    eng.analyser.getByteTimeDomainData(td);
+    let pk = 0;
+    for (let i = 0; i < td.length; i++) { const v = Math.abs(td[i] - 128) / 128; if (v > pk) pk = v; }
+    hist.push(Math.min(1, pk * 1.8)); hist.shift();
+    const slot = w / N, bw = slot * 0.56;
+    g2.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--voice').trim() || '#8FC1FF';
+    for (let i = 0; i < N; i++) {
+      const bh = Math.max(h * 0.06, hist[i] * h * 0.92);
+      rr(i * slot + (slot - bw) / 2, (h - bh) / 2, bw, bh, bw / 2);
+    }
+  } else if (mode === 'you') {
+    g2.strokeStyle = '#F28C38'; g2.lineWidth = Math.max(3, h * 0.045); g2.lineCap = 'round'; g2.lineJoin = 'round';
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ph = reduce ? 0 : t / 260;
+    g2.beginPath();
+    for (let x = 0; x <= w; x += 3) {
+      const env = Math.sin((x / w) * Math.PI);
+      const y = h / 2 + Math.sin((x / w) * Math.PI * 4 + ph) * h * 0.3 * env;
+      if (x === 0) g2.moveTo(x, y); else g2.lineTo(x, y);
+    }
+    g2.stroke();
+  } else {
+    g2.fillStyle = 'rgba(255,255,255,0.22)';
+    const slot = w / N, bw = slot * 0.56;
+    for (let i = 0; i < N; i++) rr(i * slot + (slot - bw) / 2, (h - h * 0.06) / 2, bw, h * 0.06, bw / 2);
+  }
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+reset();
+</script>
+
+</body></html>

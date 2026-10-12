@@ -1,0 +1,1218 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한국어 입문 단어 복습</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --orange: #C8602A;
+    --light-orange: #F5A04A;
+    --yellow: #F9DC5C;
+    --bg: #FDFAF4;
+    --card-bg: #fff;
+    --gray: #666;
+    --light-gray: #f0f0f0;
+    --radius: 16px;
+  }
+
+  body {
+    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── HEADER ── */
+  header {
+    width: 100%;
+    max-width: 1000px;
+    background: var(--orange);
+    color: #fff;
+    padding: 20px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 72px;
+    border-radius: 0 0 12px 12px;
+  }
+  header h1 { font-size: 1.3rem; font-weight: 700; }
+  header .subtitle { font-size: 0.85rem; opacity: .8; margin-bottom: 2px; }
+
+  /* ── NAV TABS ── */
+  .tabs {
+    display: flex;
+    width: 100%;
+    max-width: 1000px;
+    border-bottom: 2px solid var(--light-gray);
+    background: #fff;
+  }
+  .tab {
+    flex: 1; padding: 12px 6px; text-align: center;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    color: var(--gray); border-bottom: 3px solid transparent;
+    transition: all .2s;
+  }
+  .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+  /* ── SECTION SELECTOR (Review mode) ── */
+  .section-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 20px 20px 8px;
+    width: 100%;
+    max-width: 700px;
+  }
+  .section-btn {
+    background: #fff;
+    border: 2px solid var(--light-gray);
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .section-btn:hover, .section-btn.selected {
+    border-color: var(--orange);
+    background: #FFF6F0;
+  }
+  .section-btn .label { font-size: 1.1rem; font-weight: 700; color: #333; }
+  .section-btn .sublabel { font-size: 0.88rem; color: var(--gray); margin-top: 4px; }
+  .section-btn .scope { font-size: 0.95rem; color: var(--orange); margin-top: 4px; font-weight: 600; }
+
+  /* ── START BUTTON ── */
+  .start-area { padding: 8px 20px 24px; width: 100%; max-width: 700px; }
+  .btn-primary {
+    width: 100%; padding: 14px; border: none;
+    background: var(--orange); color: #fff;
+    border-radius: var(--radius); font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-primary:hover { background: #b05020; }
+  .btn-primary:disabled { background: #ccc; cursor: default; }
+
+  /* ── CARD AREA ── */
+  #card-area {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 700px;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+  .progress-bar {
+    flex: 1; height: 8px;
+    background: var(--light-gray);
+    border-radius: 4px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--orange);
+    transition: width .3s;
+  }
+  .progress-text { font-size: 0.8rem; color: var(--gray); white-space: nowrap; }
+
+  /* ── FLASH CARD ── */
+  .flashcard {
+    width: 100%;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.1);
+    overflow: hidden;
+    min-height: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .emoji-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .card-emoji {
+    font-size: 6.5rem;
+    line-height: 1;
+    user-select: none;
+  }
+  .card-emoji-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #555;
+    background: var(--light-gray);
+    padding: 3px 12px;
+    border-radius: 20px;
+  }
+
+  .card-word {
+    font-size: 2.6rem;
+    font-weight: 900;
+    color: var(--orange);
+    letter-spacing: 2px;
+  }
+  .card-rom {
+    font-size: 0.95rem;
+    color: var(--gray);
+    margin-top: 4px;
+  }
+  .card-eng {
+    display: none;
+  }
+  .card-tag {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: var(--yellow);
+    color: #7a5a00;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+
+  /* answer hidden state */
+  .answer { display: none; text-align: center; margin-top: 8px; }
+  .answer.show { display: block; animation: pop .25s ease; }
+  @keyframes pop { from { transform: scale(.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex; gap: 10px; width: 100%;
+  }
+  .btn-reveal, .btn-next, .btn-skip {
+    flex: 1; padding: 13px; border: none; border-radius: var(--radius);
+    font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all .2s;
+  }
+  .btn-reveal { background: var(--orange); color: #fff; }
+  .btn-reveal:hover { background: #b05020; }
+  .btn-next { background: #2e7d32; color: #fff; }
+  .btn-next:hover { background: #1b5e20; }
+  .btn-skip { background: var(--light-gray); color: #555; flex: 0.6; }
+
+  /* TTS button */
+  .btn-tts {
+    position: absolute; top: 12px; left: 12px;
+    background: var(--light-gray);
+    border: none; border-radius: 50%;
+    width: 38px; height: 38px;
+    font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-tts:hover { background: #ddd; }
+
+  /* ── SHUFFLE ── */
+  .shuffle-row {
+    display: flex; justify-content: flex-end; width: 100%;
+  }
+  .btn-shuffle {
+    background: none; border: 1.5px solid var(--gray);
+    border-radius: 20px; padding: 6px 14px;
+    font-size: 0.8rem; color: var(--gray); cursor: pointer;
+  }
+  .btn-shuffle:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* ── DRILL MODE ── */
+  #drill-area {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 700px;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .drill-card {
+    width: 100%;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.1);
+    overflow: hidden;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 28px 20px;
+    position: relative;
+  }
+
+  .drill-emoji {
+    font-size: 6rem;
+    line-height: 1;
+  }
+
+  .drill-noun {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--orange);
+    letter-spacing: 2px;
+  }
+
+  .drill-prompt {
+    font-size: 0.9rem;
+    color: var(--gray);
+    text-align: center;
+  }
+
+  .drill-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .drill-btn {
+    width: 100%;
+    padding: 16px;
+    border: 2.5px solid var(--light-gray);
+    border-radius: var(--radius);
+    background: #fff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    color: #333;
+    text-align: center;
+  }
+
+  .drill-btn:hover {
+    border-color: var(--orange);
+    background: #FFF6F0;
+  }
+
+  .drill-btn.selected {
+    border-color: var(--orange);
+    background: #FFF0E6;
+    color: var(--orange);
+  }
+
+  .drill-speak-prompt {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: #E8F5E9;
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    width: 100%;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #2e7d32;
+    animation: pop .25s ease;
+  }
+
+  .drill-speak-prompt.show {
+    display: flex;
+  }
+
+  .drill-selected-sentence {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--orange);
+    text-align: center;
+    min-height: 2rem;
+    animation: pop .2s ease;
+  }
+
+  /* ── DONE SCREEN ── */
+  #done-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 16px;
+    text-align: center;
+  }
+  #done-screen .done-emoji { font-size: 5rem; }
+  #done-screen h2 { font-size: 1.4rem; color: var(--orange); }
+  #done-screen p { color: var(--gray); }
+
+  /* ── NEW VOCAB (10 random) ── */
+  #newvocab-area {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 700px;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .mode-intro {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 16px;
+    width: 100%;
+    text-align: center;
+    border: 2px solid var(--yellow);
+  }
+  .mode-intro h2 { font-size: 1.1rem; color: var(--orange); margin-bottom: 6px; }
+  .mode-intro p { font-size: 0.85rem; color: var(--gray); }
+
+  /* screens */
+  #selector { width: 100%; max-width: 700px; }
+  #newvocab-selector { width: 100%; max-width: 700px; display: none; padding: 16px; }
+
+  /* responsive */
+  @media (max-width: 400px) {
+    .section-grid { grid-template-columns: 1fr; }
+    .card-emoji { font-size: 5.5rem; }
+    .card-word { font-size: 2rem; }
+  }
+  /* ── MATCHING GAME ── */
+  #matching-selector { width: 100%; max-width: 700px; display: none; }
+  #matching-area {
+    display: none; flex-direction: column; align-items: center;
+    width: 100%; max-width: 700px; padding: 16px; gap: 16px;
+  }
+  .match-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    align-items: stretch;
+  }
+  .match-col { display: flex; flex-direction: column; gap: 10px; }
+  .match-item {
+    background: #fff;
+    border: 2.5px solid var(--light-gray);
+    border-radius: 14px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    font-size: 1rem;
+    font-weight: 700;
+    height: 80px;
+    display: flex; align-items: center; justify-content: center;
+    user-select: none;
+  }
+  .match-item.emoji-item { font-size: 2.2rem; }
+  .match-item.emoji-item .emoji-caption { font-size: 0.62rem; font-weight: 600; color: #888; margin-top: 2px; }
+  .match-item:hover { border-color: var(--orange); background: #FFF6F0; }
+  .match-item.selected { border-color: var(--orange); background: #FFF0E6; box-shadow: 0 0 0 3px rgba(200,96,42,.2); }
+  .match-item.correct { border-color: #2e7d32; background: #E8F5E9; color: #2e7d32; pointer-events: none; }
+  .match-item.wrong { border-color: #c62828; background: #FFEBEE; animation: shake .3s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .match-score {
+    font-size: 0.85rem; color: var(--gray);
+    background: var(--light-gray); padding: 4px 14px;
+    border-radius: 20px; align-self: flex-end;
+  }
+  #match-done {
+    display: none; flex-direction: column; align-items: center;
+    gap: 12px; text-align: center; padding: 20px;
+    background: #fff; border-radius: 20px; width: 100%;
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+  }
+  #match-done .done-emoji { font-size: 4rem; }
+  #match-done h2 { font-size: 1.3rem; color: var(--orange); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 style="width:100%; text-align:center;">단어 복습 카드 🃏</h1>
+</header>
+
+<!-- ══ REVIEW TAB ══ -->
+<div id="selector">
+  <div class="section-grid">
+    <div class="section-btn selected" onclick="selectSection(this, 'basic-vowel')" data-section="basic-vowel">
+      <div class="label">📖 기본 모음</div>
+      <div class="sublabel">Basic Vowels</div>
+      <div class="scope">아·어·오·우·으·이</div>
+    </div>
+    <div class="section-btn" onclick="selectSection(this, 'basic-consonant')" data-section="basic-consonant">
+      <div class="label">📖 기본 자음</div>
+      <div class="sublabel">Basic Consonants</div>
+      <div class="scope">ㄱ·ㄴ·ㄷ·ㄹ·ㅁ·ㅂ·ㅅ·ㅈ·ㅎ</div>
+    </div>
+    <div class="section-btn" onclick="selectSection(this, 'double-vowel')" data-section="double-vowel">
+      <div class="label">📖 이중 모음</div>
+      <div class="sublabel">Double Vowels</div>
+      <div class="scope">ㅘ·ㅙ·ㅚ·ㅝ·ㅟ·ㅢ 등</div>
+    </div>
+    <div class="section-btn" onclick="selectSection(this, 'batchim')" data-section="batchim">
+      <div class="label">📖 받침</div>
+      <div class="sublabel">Final Consonants</div>
+      <div class="scope">ㄱ·ㄴ·ㄷ·ㄹ·ㅁ·ㅂ·ㅇ 받침</div>
+    </div>
+    <div class="section-btn" onclick="selectSection(this, 'double-batchim')" data-section="double-batchim">
+      <div class="label">📖 겹받침</div>
+      <div class="sublabel">Double Final Consonants</div>
+      <div class="scope">ㄳ·ㄵ·ㄻ·ㄼ·ㄾ 등</div>
+    </div>
+    <div class="section-btn" onclick="selectSection(this, 'extended')" data-section="extended">
+      <div class="label">📖 필수 발음규칙</div>
+      <div class="sublabel">Sound Rules</div>
+      <div class="scope">연음법칙·경음화</div>
+    </div>
+    <div class="section-btn" onclick="selectSection(this, 'expression')" data-section="expression">
+      <div class="label">💬 교실 표현</div>
+      <div class="sublabel">Classroom Expressions</div>
+      <div class="scope">인사·교실 표현</div>
+    </div>
+    <div class="section-btn" onclick="selectSection(this, 'sentence')" data-section="sentence">
+      <div class="label">✏️ 문장 만들기</div>
+      <div class="sublabel">Make Sentences</div>
+      <div class="scope">명사 + 동사/형용사</div>
+    </div>
+  </div>
+  <div class="start-area" style="display:flex; gap:8px; padding: 12px 20px 20px;">
+    <button id="btn-review" class="btn-primary" style="background:#888; font-size:0.85rem; padding:10px 8px;" onclick="startReview()">📖 단어 복습</button>
+    <button id="btn-matching" class="btn-primary" style="font-size:0.85rem; padding:10px 8px;" onclick="startMatching()">🎯 매칭게임</button>
+    <button id="btn-newvocab" class="btn-primary" style="background: var(--light-orange); font-size:0.85rem; padding:10px 8px;" onclick="startNewVocab()">✨ 새단어</button>
+    <button id="btn-drill" class="btn-primary" style="display:none; font-size:0.85rem; padding:10px 8px;" onclick="startDrill()">🗣️ 말하기 드릴</button>
+  </div>
+</div>
+
+<!-- ══ CARD AREA ══ -->
+<div id="card-area">
+  <div class="progress-row">
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+    <div class="progress-text" id="prog-text">1 / 10</div>
+  </div>
+  <div class="shuffle-row">
+    <button class="btn-shuffle" onclick="shuffleDeck()">🔀 섞기</button>
+  </div>
+  <div class="flashcard" id="flashcard">
+    <button class="btn-tts" onclick="speakWord()" title="듣기">🔊</button>
+    <div class="card-tag" id="card-tag"></div>
+    <div class="emoji-wrap">
+      <div class="card-emoji" id="card-emoji">🍎</div>
+      <div class="card-emoji-label" id="card-emoji-label">apple</div>
+    </div>
+    <div class="answer show" id="card-word-area">
+      <div class="card-word" id="card-word"></div>
+      <div class="card-rom" id="card-rom"></div>
+      <div class="card-eng" id="card-eng"></div>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="btn-skip" onclick="nextCard(false)">건너뛰기</button>
+    <button class="btn-reveal" id="btn-reveal" onclick="revealAnswer()">정답 보기 👀</button>
+    <button class="btn-next" id="btn-next" style="display:none" onclick="nextCard(true)">다음 ✓</button>
+  </div>
+  <button class="btn-primary" style="margin-top:4px; background:#888;" onclick="endSession()">← 돌아가기</button>
+</div>
+
+<!-- ══ DONE SCREEN ══ -->
+<div id="done-screen">
+  <div class="done-emoji">🎉</div>
+  <h2>잘 했어요!</h2>
+  <p id="done-text"></p>
+  <button class="btn-primary" onclick="endSession()">처음으로 돌아가기</button>
+</div>
+
+<!-- ══ NEW VOCAB AREA ══ -->
+<div id="newvocab-area"></div>
+
+<!-- ══ DRILL AREA ══ -->
+<div id="drill-area">
+  <div class="progress-row">
+    <div class="progress-bar"><div class="progress-fill" id="drill-prog-fill"></div></div>
+    <div class="progress-text" id="drill-prog-text">1 / 10</div>
+  </div>
+  <div class="drill-card">
+    <div class="card-tag" id="drill-tag">말하기 드릴</div>
+    <div class="drill-emoji" id="drill-emoji">💧</div>
+    <div class="drill-noun" id="drill-noun">물</div>
+    <div class="drill-prompt">맞는 동사를 골라서 말해보세요!</div>
+    <div class="drill-selected-sentence" id="drill-sentence"></div>
+    <div class="drill-speak-prompt" id="drill-speak">
+      <span>🎤</span><span>따라 말해보세요!</span>
+    </div>
+  </div>
+  <div class="drill-choices" id="drill-choices"></div>
+  <button class="btn-primary" id="drill-next-btn" style="display:none" onclick="nextDrill()">다음 ✓</button>
+  <button class="btn-primary" style="margin-top:4px; background:#888;" onclick="endDrill()">← 돌아가기</button>
+</div>
+
+<!-- ══ MATCHING TAB ══ -->
+<div id="matching-area">
+  <div class="match-score" id="match-score">0 / 6</div>
+  <div class="match-grid">
+    <div class="match-col" id="match-left"></div>
+    <div class="match-col" id="match-right"></div>
+  </div>
+  <div id="match-done">
+    <div class="done-emoji">🎉</div>
+    <h2>완벽해요!</h2>
+    <p id="match-done-text"></p>
+    <button class="btn-primary" onclick="startMatching()">다시 6개 🎲</button>
+    <button class="btn-primary" style="background:#888; margin-top:6px;" onclick="endMatching()">← 돌아가기</button>
+  </div>
+  <button class="btn-primary" style="margin-top:4px; background:#888;" id="match-back-btn" onclick="endMatching()">← 돌아가기</button>
+</div>
+
+<script>
+// ════════════════════════════════
+//  VOCABULARY DATABASE
+//  format: { w: 단어, r: romanization, e: English, emoji: emoji, sec: section }
+// ════════════════════════════════
+const VOCAB = [
+  // ── CH.1 기본 모음 (Basic vowels) ──
+  { w:'이', r:'i', e:'two / teeth', emoji:'2️⃣', sec:'basic-vowel' },
+  { w:'오', r:'o', e:'five', emoji:'5️⃣', sec:'basic-vowel' },
+  { w:'오이', r:'o-i', e:'cucumber', emoji:'🥒', sec:'basic-vowel' },
+  { w:'아이', r:'a-i', e:'child', emoji:'👶', sec:'basic-vowel' },
+  { w:'아우', r:'a-u', e:'younger sibling', emoji:'👦', label:'younger sibling', sec:'basic-vowel' },
+  { w:'우유', r:'u-yu', e:'milk', emoji:'🥛', sec:'basic-vowel' },
+  { w:'여우', r:'yeo-u', e:'fox', emoji:'🦊', sec:'basic-vowel' },
+  { w:'야구', r:'ya-gu', e:'baseball', emoji:'⚾', sec:'basic-vowel' },
+  { w:'여자', r:'yeo-ja', e:'woman', emoji:'👩', sec:'basic-vowel' },
+
+  // ── CH.2 기본 자음 (Basic consonants) ──
+  { w:'나무', r:'na-mu', e:'tree', emoji:'🌳', sec:'basic-consonant' },
+  { w:'노래', r:'no-rae', e:'song', emoji:'🎵', sec:'basic-consonant' },
+  { w:'이마', r:'i-ma', e:'forehead', emoji:'😊', sec:'basic-consonant' },
+  { w:'이모', r:'i-mo', e:'aunt (mother\'s side)', emoji:'👩', sec:'basic-consonant' },
+  { w:'나라', r:'na-ra', e:'country', emoji:'🌍', sec:'basic-consonant' },
+  { w:'미로', r:'mi-ro', e:'maze', emoji:'🌀', sec:'basic-consonant' },
+  { w:'나비', r:'na-bi', e:'butterfly', emoji:'🦋', sec:'basic-consonant' },
+  { w:'구두', r:'gu-du', e:'dress shoes', emoji:'👠', sec:'basic-consonant' },
+  { w:'다리', r:'da-ri', e:'bridge / leg', emoji:'🌉', sec:'basic-consonant' },
+  { w:'새우', r:'sae-u', e:'shrimp', emoji:'🦐', sec:'basic-consonant' },
+  { w:'바지', r:'ba-ji', e:'pants', emoji:'👖', sec:'basic-consonant' },
+  { w:'개미', r:'gae-mi', e:'ant', emoji:'🐜', sec:'basic-consonant' },
+  { w:'사자', r:'sa-ja', e:'lion', emoji:'🦁', sec:'basic-consonant' },
+  { w:'시소', r:'si-so', e:'seesaw', emoji:'⚖️', sec:'basic-consonant' },
+  { w:'자두', r:'ja-du', e:'plum', emoji:'🍑', sec:'basic-consonant' },
+  { w:'조개', r:'jo-gae', e:'clam / shell', emoji:'🐚', sec:'basic-consonant' },
+  { w:'구두', r:'gu-du', e:'dress shoes', emoji:'👠', sec:'basic-consonant' },
+  { w:'버스', r:'beo-seu', e:'bus', emoji:'🚌', sec:'basic-consonant' },
+  { w:'고구마', r:'go-gu-ma', e:'sweet potato', emoji:'🍠', sec:'basic-consonant' },
+
+  // ── CH.3 거센소리 (Aspirated consonants) ──
+  { w:'치마', r:'chi-ma', e:'skirt', emoji:'👗', sec:'basic-consonant' },
+  { w:'고추', r:'go-chu', e:'chili pepper', emoji:'🌶️', sec:'basic-consonant' },
+  { w:'허리', r:'heo-ri', e:'waist', emoji:'🧍', label:'waist', sec:'basic-consonant' },
+  { w:'호주', r:'ho-ju', e:'Australia', emoji:'🇦🇺', sec:'basic-consonant' },
+  { w:'카메라', r:'ka-me-ra', e:'camera', emoji:'📷', sec:'basic-consonant' },
+  { w:'카레', r:'ka-re', e:'curry', emoji:'🍛', sec:'basic-consonant' },
+  { w:'파프리카', r:'pa-peu-ri-ka', e:'bell pepper', emoji:'🫑', sec:'basic-consonant' },
+  { w:'아보카도', r:'a-bo-ka-do', e:'avocado', emoji:'🥑', sec:'basic-consonant' },
+  { w:'피자', r:'pi-ja', e:'pizza', emoji:'🍕', sec:'basic-consonant' },
+  { w:'타코', r:'ta-ko', e:'taco', emoji:'🌮', sec:'basic-consonant' },
+
+  // ── CH.4 된소리 (Tensed consonants) ──
+  { w:'씨', r:'ssi', e:'seed / Mr/Ms (honorific)', emoji:'🌱', sec:'basic-consonant' },
+  { w:'쓰다', r:'sseu-da', e:'to write', emoji:'✍️', sec:'basic-consonant' },
+  { w:'찌개', r:'jji-gae', e:'Korean stew', emoji:'🍲', sec:'basic-consonant' },
+  { w:'가방', r:'ga-bang', e:'bag', emoji:'👜', sec:'basic-consonant' },
+  { w:'고양이', r:'go-yang-i', e:'cat', emoji:'🐱', sec:'basic-consonant' },
+  { w:'강아지', r:'gang-a-ji', e:'puppy', emoji:'🐶', sec:'basic-consonant' },
+  { w:'케이크', r:'ke-i-keu', e:'cake', emoji:'🎂', sec:'basic-consonant' },
+  { w:'바쁘다', r:'ba-ppeu-da', e:'to be busy', emoji:'😤', sec:'basic-consonant' },
+  { w:'아프다', r:'a-peu-da', e:'to be sick', emoji:'🤒', sec:'basic-consonant' },
+  { w:'가다', r:'ga-da', e:'to go', emoji:'🚶', sec:'basic-consonant' },
+
+  // ── CH.5 이중 모음 1 (Double vowel 1: ㅛ·ㅠ·ㅒ·ㅖ·ㅕ·ㅑ) ──
+  { w:'요리', r:'yo-ri', e:'cooking', emoji:'🍳', sec:'double-vowel' },
+  { w:'표', r:'pyo', e:'ticket', emoji:'🎫', sec:'double-vowel' },
+  { w:'유리', r:'yu-ri', e:'glass (material)', emoji:'🪟', sec:'double-vowel' },
+  { w:'휴지', r:'hyu-ji', e:'tissue paper', emoji:'🧻', sec:'double-vowel' },
+  { w:'여자', r:'yeo-ja', e:'woman', emoji:'👩', sec:'double-vowel' },
+  { w:'야구', r:'ya-gu', e:'baseball', emoji:'⚾', sec:'double-vowel' },
+  { w:'여서', r:'yeo-seo', e:'Chinese character book', emoji:'📖', sec:'double-vowel' },
+
+  // ── CH.6 이중 모음 2 (Double vowel 2: ㅘ·ㅙ·ㅚ·ㅝ·ㅟ·ㅢ) ──
+  { w:'귀', r:'gwi', e:'ear', emoji:'👂', sec:'double-vowel' },
+  { w:'가위', r:'ga-wi', e:'scissors', emoji:'✂️', sec:'double-vowel' },
+  { w:'의자', r:'ui-ja', e:'chair', emoji:'🪑', sec:'double-vowel' },
+  { w:'돼지', r:'dwae-ji', e:'pig', emoji:'🐷', sec:'double-vowel' },
+  { w:'까마귀', r:'kka-ma-gwi', e:'crow', emoji:'🐦‍⬛', sec:'double-vowel' },
+  { w:'주사위', r:'ju-sa-wi', e:'dice', emoji:'🎲', sec:'double-vowel' },
+  { w:'의사', r:'ui-sa', e:'doctor', emoji:'👨‍⚕️', sec:'double-vowel' },
+  { w:'의미', r:'ui-mi', e:'meaning', emoji:'💬', sec:'double-vowel' },
+  { w:'과자', r:'gwa-ja', e:'snack / cookie', emoji:'🍪', sec:'double-vowel' },
+  { w:'사과', r:'sa-gwa', e:'apple', emoji:'🍎', sec:'double-vowel' },
+  { w:'봐요', r:'bwa-yo', e:'(I) watch / look', emoji:'👀', sec:'double-vowel' },
+  { w:'뭐예요', r:'mwo-ye-yo', e:'What is it?', emoji:'❓', sec:'double-vowel' },
+
+  // ── CH.7 받침 1 (Final consonant 1: ㄴ·ㅇ·ㄹ) ──
+  { w:'눈', r:'nun', e:'eye / snow', emoji:'👁️', sec:'batchim' },
+  { w:'우산', r:'u-san', e:'umbrella', emoji:'☂️', sec:'batchim' },
+  { w:'발', r:'bal', e:'foot', emoji:'🦶', sec:'batchim' },
+  { w:'얼굴', r:'eol-gul', e:'face', emoji:'😊', sec:'batchim' },
+  { w:'손', r:'son', e:'hand', emoji:'✋', sec:'batchim' },
+  { w:'말', r:'mal', e:'horse', emoji:'🐎', sec:'batchim' },
+  { w:'딸기', r:'ttal-gi', e:'strawberry', emoji:'🍓', sec:'batchim' },
+  { w:'구름', r:'gu-reum', e:'cloud', emoji:'☁️', sec:'batchim' },
+  { w:'사슴', r:'sa-seum', e:'deer', emoji:'🦌', sec:'batchim' },
+  { w:'가방', r:'ga-bang', e:'bag', emoji:'👜', sec:'batchim' },
+  { w:'물', r:'mul', e:'water', emoji:'💧', sec:'batchim' },
+  { w:'돈', r:'don', e:'money', emoji:'💰', sec:'batchim' },
+  { w:'길', r:'gil', e:'road / way', emoji:'🛣️', sec:'batchim' },
+  { w:'친구', r:'chin-gu', e:'friend', emoji:'👫', sec:'batchim' },
+  { w:'과일', r:'gwa-il', e:'fruit', emoji:'🍇', sec:'batchim' },
+  { w:'신발', r:'sin-bal', e:'shoes', emoji:'👟', sec:'batchim' },
+  { w:'달걀', r:'dal-gyal', e:'egg', emoji:'🥚', sec:'batchim' },
+  { w:'연필', r:'yeon-pil', e:'pencil', emoji:'✏️', sec:'batchim' },
+  { w:'팔', r:'pal', e:'arm', emoji:'💪', sec:'batchim' },
+  { w:'기린', r:'gi-rin', e:'giraffe', emoji:'🦒', sec:'batchim' },
+
+  // ── CH.8 받침 2 (Final consonant 2: ㄱ·ㅂ·ㄷ) ──
+  { w:'컵', r:'keop', e:'cup / mug', emoji:'☕', sec:'batchim' },
+  { w:'무릎', r:'mu-reup', e:'knee', emoji:'🦵', sec:'batchim' },
+  { w:'잎', r:'ip', e:'leaf', emoji:'🍃', sec:'batchim' },
+  { w:'입', r:'ip', e:'mouth', emoji:'👄', sec:'batchim' },
+  { w:'책', r:'chaek', e:'book', emoji:'📚', sec:'batchim' },
+  { w:'수박', r:'su-bak', e:'watermelon', emoji:'🍉', sec:'batchim' },
+  { w:'부엌', r:'bu-eok', e:'kitchen', emoji:'🍳', sec:'batchim' },
+  { w:'낚시', r:'nak-si', e:'fishing', emoji:'🎣', sec:'batchim' },
+  { w:'팥', r:'pat', e:'red beans', emoji:'🫘', sec:'batchim' },
+  { w:'숲', r:'sup', e:'forest', emoji:'🌲', sec:'batchim' },
+  { w:'붓', r:'but', e:'paintbrush', emoji:'🖌️', sec:'batchim' },
+  { w:'벚꽃', r:'beot-kkot', e:'cherry blossom', emoji:'🌸', sec:'batchim' },
+  { w:'밥솥', r:'bap-sot', e:'rice cooker', emoji:'🍚', sec:'batchim' },
+  { w:'한국어', r:'han-gug-eo', e:'Korean language', emoji:'🇰🇷', sec:'batchim' },
+  { w:'학생', r:'hak-saeng', e:'student', emoji:'🧑‍🎓', sec:'batchim' },
+  { w:'선생님', r:'seon-saeng-nim', e:'teacher', emoji:'👩‍🏫', sec:'batchim' },
+  { w:'음악', r:'eum-ak', e:'music', emoji:'🎵', sec:'batchim' },
+
+  // ── CH.9 겹받침 (Double final consonants) ──
+  { w:'여덟', r:'yeo-deol', e:'eight', emoji:'8️⃣', sec:'double-batchim' },
+  { w:'짧다', r:'jjal-da', e:'to be short', emoji:'📏', sec:'double-batchim' },
+  { w:'끓다', r:'kkeul-ta', e:'to boil', emoji:'♨️', sec:'double-batchim' },
+  { w:'싫다', r:'sil-ta', e:'to dislike', emoji:'😒', sec:'double-batchim' },
+  { w:'닭', r:'dak', e:'chicken', emoji:'🐔', sec:'double-batchim' },
+  { w:'읽다', r:'ik-da', e:'to read', emoji:'📖', sec:'double-batchim' },
+  { w:'앉다', r:'an-da', e:'to sit', emoji:'🪑', sec:'double-batchim' },
+  { w:'없다', r:'eop-da', e:'to not exist / have not', emoji:'❌', sec:'double-batchim' },
+  { w:'많다', r:'man-ta', e:'to be many', emoji:'🔢', sec:'double-batchim' },
+  { w:'넓다', r:'neol-da', e:'to be wide / broad', emoji:'↔️', sec:'double-batchim' },
+  { w:'흙', r:'heuk', e:'soil / earth', emoji:'🌱', sec:'double-batchim' },
+  { w:'삶', r:'sam', e:'life', emoji:'✨', sec:'double-batchim' },
+  { w:'밝다', r:'bak-da', e:'to be bright', emoji:'☀️', sec:'double-batchim' },
+  { w:'젊다', r:'jeom-da', e:'to be young', emoji:'🧑', sec:'double-batchim' },
+
+  // ── CH.10 연음 / 경음화 (Extended sound rules) ──
+  { w:'한국어', r:'[한구거]', e:'Korean (linking sound)', emoji:'🇰🇷', sec:'extended' },
+  { w:'음악', r:'[으막]', e:'music (linking sound)', emoji:'🎵', sec:'extended' },
+  { w:'웃어요', r:'[우서요]', e:'(I) laugh / smile', emoji:'😄', sec:'extended' },
+  { w:'입어요', r:'[이버요]', e:'(I) wear / put on', emoji:'👕', sec:'extended' },
+  { w:'넓이', r:'[널비]', e:'width / area', emoji:'📐', sec:'extended' },
+  { w:'값은', r:'[갑슨]', e:'the price (topic)', emoji:'🏷️', sec:'extended' },
+  { w:'닭이', r:'[달기]', e:'chicken (subject)', emoji:'🐔', sec:'extended' },
+  { w:'없어', r:'[업서]', e:'don\'t have / not there', emoji:'❌', sec:'extended' },
+  { w:'짧아요', r:'[짤바요]', e:'(it\'s) short', emoji:'📏', sec:'extended' },
+  { w:'밝아요', r:'[발가요]', e:'(it\'s) bright', emoji:'☀️', sec:'extended' },
+  { w:'흙이', r:'[흘기]', e:'soil (subject)', emoji:'🌿', sec:'extended' },
+  { w:'맑아요', r:'[말가요]', e:'(it\'s) clear / sunny', emoji:'🌤️', sec:'extended' },
+
+  // ── 문장 만들기 (Make Sentences) ──
+  { w:'우유가 좋아요', r:'u-yu-ga jo-a-yo', e:'I like milk', emoji:'🥛', sec:'sentence' },
+  { w:'친구가 많아요', r:'chin-gu-ga ma-na-yo', e:'I have many friends', emoji:'👫', sec:'sentence' },
+  { w:'강아지가 좋아요', r:'gang-a-ji-ga jo-a-yo', e:'I like puppies', emoji:'🐶', sec:'sentence' },
+  { w:'책이 많아요', r:'chae-gi ma-na-yo', e:'There are many books', emoji:'📚', sec:'sentence' },
+  { w:'오이가 싫어요', r:'o-i-ga si-reo-yo', e:'I don\'t like cucumber', emoji:'🥒', sec:'sentence' },
+  { w:'물이 좋아요', r:'mu-ri jo-a-yo', e:'I like water', emoji:'💧', sec:'sentence' },
+  { w:'친구가 웃어요', r:'chin-gu-ga u-seo-yo', e:'My friend laughs', emoji:'😄', sec:'sentence' },
+  { w:'아이가 웃어요', r:'a-i-ga u-seo-yo', e:'The child laughs', emoji:'👶', sec:'sentence' },
+  { w:'강아지가 앉아요', r:'gang-a-ji-ga an-ja-yo', e:'The puppy sits', emoji:'🐶', sec:'sentence' },
+  { w:'나비가 좋아요', r:'na-bi-ga jo-a-yo', e:'I like butterflies', emoji:'🦋', sec:'sentence' },
+  { w:'흙이 많아요', r:'heul-gi ma-na-yo', e:'There\'s lots of soil', emoji:'🌱', sec:'sentence' },
+  { w:'의자가 없어요', r:'ui-ja-ga eop-seo-yo', e:'There\'s no chair', emoji:'🪑', sec:'sentence' },
+  { w:'고양이가 많아요', r:'go-yang-i-ga ma-na-yo', e:'There are many cats', emoji:'🐱', sec:'sentence' },
+  { w:'아이가 가요', r:'a-i-ga ga-yo', e:'The child goes', emoji:'👶', sec:'sentence' },
+  { w:'책을 읽어요', r:'chae-geul il-geo-yo', e:'(I) read a book', emoji:'📖', sec:'sentence' },
+  { w:'친구가 없어요', r:'chin-gu-ga eop-seo-yo', e:'I have no friends', emoji:'😢', sec:'sentence' },
+  { w:'사과가 좋아요', r:'sa-gwa-ga jo-a-yo', e:'I like apples', emoji:'🍎', sec:'sentence' },
+  { w:'닭이 웃어요', r:'dal-gi u-seo-yo', e:'The chicken laughs', emoji:'🐔', sec:'sentence' },
+  { w:'흙이 좋아요', r:'heul-gi jo-a-yo', e:'I like soil', emoji:'🌿', sec:'sentence' },
+  { w:'강아지가 아파요', r:'gang-a-ji-ga a-pa-yo', e:'The puppy is sick', emoji:'🐶', sec:'sentence' },
+  { w:'선생님을 보세요', r:'seon-saeng-ni-meul bo-se-yo', e:'Look at the teacher', emoji:'👩‍🏫', sec:'expression' },
+  { w:'여러분, 들으세요', r:'yeo-reo-bun deu-reu-se-yo', e:'Everyone, listen please', emoji:'👂', sec:'expression' },
+  { w:'책을 읽으세요', r:'chae-geul il-geu-se-yo', e:'Read the book', emoji:'📖', sec:'expression' },
+  { w:'이름을 쓰세요', r:'i-reu-meul sseu-se-yo', e:'Write your name', emoji:'✏️', sec:'expression' },
+  { w:'따라 하세요', r:'tta-ra ha-se-yo', e:'Repeat after me', emoji:'🗣️', sec:'expression' },
+  { w:'질문이 있어요', r:'jil-mu-ni i-sseo-yo', e:'I have a question', emoji:'🙋', sec:'expression' },
+  { w:'말하세요', r:'mal-ha-se-yo', e:'Say it / Speak', emoji:'💬', sec:'expression' },
+  { w:'이야기하세요', r:'i-ya-gi-ha-se-yo', e:'Talk / Tell a story', emoji:'🗨️', sec:'expression' },
+  { w:'좋아요', r:'jo-a-yo', e:'Good! / I like it', emoji:'👍', sec:'expression' },
+  { w:'잘했어요', r:'jal-hae-sseo-yo', e:'Well done!', emoji:'🌟', sec:'expression' },
+  { w:'쉬세요', r:'swi-se-yo', e:'Take a rest', emoji:'😌', sec:'expression' },
+  { w:'잠깐만요', r:'jam-kkan-man-yo', e:'Just a moment', emoji:'✋', sec:'expression' },
+  { w:'다시 말해 주세요', r:'da-si mal-hae ju-se-yo', e:'Please say it again', emoji:'🔁', sec:'expression' },
+
+  // ── CH.12 교실 표현 2 / 인사 (Greetings) ──
+  { w:'안녕하세요', r:'an-nyeong-ha-se-yo', e:'Hello (formal)', emoji:'👋', sec:'expression' },
+  { w:'감사합니다', r:'gam-sa-ham-ni-da', e:'Thank you (formal)', emoji:'🙏', sec:'expression' },
+  { w:'죄송합니다', r:'joe-song-ham-ni-da', e:'I\'m sorry (formal)', emoji:'😔', sec:'expression' },
+  { w:'안녕히 가세요', r:'an-nyeong-hi ga-se-yo', e:'Goodbye (to person leaving)', emoji:'🚶', sec:'expression' },
+  { w:'안녕히 계세요', r:'an-nyeong-hi gye-se-yo', e:'Goodbye (to person staying)', emoji:'🏠', sec:'expression' },
+  { w:'처음 만나서 반갑습니다', r:'cheo-eum man-na-seo ban-gap-seum-ni-da', e:'Nice to meet you', emoji:'🤝', sec:'expression' },
+  { w:'잘 먹겠습니다', r:'jal meok-get-seum-ni-da', e:'I will eat well (before meal)', emoji:'🍽️', sec:'expression' },
+  { w:'잘 먹었습니다', r:'jal meo-geot-seum-ni-da', e:'I ate well (after meal)', emoji:'😋', sec:'expression' },
+  { w:'맛있게 먹어요', r:'ma-sit-ge meo-geo-yo', e:'Enjoy your meal!', emoji:'🍱', sec:'expression' },
+  { w:'생일 축하해요', r:'saeng-il chu-ka-hae-yo', e:'Happy birthday!', emoji:'🎂', sec:'expression' },
+];
+
+// Section label map
+const SECTION_LABELS = {
+  'basic-vowel': '기본 모음',
+  'basic-consonant': '기본 자음',
+  'double-vowel': '이중 모음',
+  'batchim': '받침',
+  'double-batchim': '겹받침',
+  'extended': '필수 발음규칙',
+  'expression': '교실 표현',
+  'sentence': '문장 만들기'
+};
+
+// ── STATE ──
+let currentTab = 'review';
+let selectedSection = 'basic-vowel';
+let deck = [];
+let cardIndex = 0;
+let revealed = false;
+let isNewVocab = false;
+
+// ── TAB SWITCH ──
+function switchTab(tab) {
+  currentTab = tab;
+  const tabIndex = tab==='review' ? 0 : 1;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i === tabIndex));
+  document.getElementById('selector').style.display = tab==='review' ? 'block' : 'none';
+  document.getElementById('newvocab-selector').style.display = tab==='newvocab' ? 'flex' : 'none';
+  document.getElementById('matching-area').style.display = 'none';
+  hideCardAreas();
+}
+
+function hideCardAreas() {
+  document.getElementById('card-area').style.display = 'none';
+  document.getElementById('done-screen').style.display = 'none';
+  document.getElementById('drill-area').style.display = 'none';
+}
+
+// ── SECTION SELECT ──
+function selectSection(el, sec) {
+  document.querySelectorAll('.section-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSection = sec;
+  const isSentence = sec === 'sentence';
+  document.getElementById('btn-review').style.display = isSentence ? 'none' : 'block';
+  document.getElementById('btn-newvocab').style.display = isSentence ? 'none' : 'block';
+  document.getElementById('btn-matching').style.display = isSentence ? 'none' : 'block';
+  document.getElementById('btn-drill').style.display = isSentence ? 'block' : 'none';
+}
+
+// ── REVIEW START ──
+function startReview() {
+  let pool = VOCAB.filter(v => v.sec === selectedSection);
+  if (!pool.length) { alert('이 범위의 단어가 없어요!'); return; }
+  deck = shuffle([...pool]);
+  cardIndex = 0;
+  isNewVocab = false;
+  document.getElementById('selector').style.display = 'none';
+  document.getElementById('card-area').style.display = 'flex';
+  showCard();
+}
+
+// ── NEW VOCAB START ──
+function startNewVocab() {
+  let pool = VOCAB.filter(v => v.sec === selectedSection);
+  pool = shuffle([...pool]);
+  deck = pool.slice(0, Math.min(10, pool.length));
+  cardIndex = 0;
+  isNewVocab = true;
+  document.getElementById('selector').style.display = 'none';
+  document.getElementById('card-area').style.display = 'flex';
+  showCard();
+}
+
+// ── SHOW CARD ──
+function showCard() {
+  if (cardIndex >= deck.length) { showDone(); return; }
+  const card = deck[cardIndex];
+  revealed = false;
+
+  document.getElementById('card-emoji').textContent = card.emoji;
+  document.getElementById('card-emoji-label').textContent = card.e;
+  document.getElementById('card-word').textContent = card.w;
+  document.getElementById('card-rom').textContent = card.r;
+  document.getElementById('card-eng').textContent = card.e;
+  document.getElementById('card-tag').textContent = SECTION_LABELS[card.sec] || card.sec;
+
+  // Hide answer initially
+  document.getElementById('card-word-area').classList.remove('show');
+  document.getElementById('btn-reveal').style.display = 'block';
+  document.getElementById('btn-next').style.display = 'none';
+
+  // Progress
+  const pct = (cardIndex / deck.length) * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = `${cardIndex+1} / ${deck.length}`;
+}
+
+function revealAnswer() {
+  revealed = true;
+  document.getElementById('card-word-area').classList.add('show');
+  document.getElementById('btn-reveal').style.display = 'none';
+  document.getElementById('btn-next').style.display = 'block';
+  speakWord();
+}
+
+function nextCard(correct) {
+  cardIndex++;
+  showCard();
+}
+
+function showDone() {
+  document.getElementById('card-area').style.display = 'none';
+  document.getElementById('done-screen').style.display = 'flex';
+  document.getElementById('done-text').textContent = `${deck.length}개 단어 완료! 수고했어요 🌟`;
+}
+
+function endSession() {
+  document.getElementById('card-area').style.display = 'none';
+  document.getElementById('done-screen').style.display = 'none';
+  document.getElementById('selector').style.display = 'block';
+}
+
+function shuffleDeck() {
+  deck = shuffle(deck);
+  cardIndex = 0;
+  showCard();
+}
+
+// ── TTS ──
+function speakWord() {
+  const word = deck[cardIndex]?.w;
+  if (!word || !window.speechSynthesis) return;
+  const utt = new SpeechSynthesisUtterance(word);
+  utt.lang = 'ko-KR';
+  utt.rate = 0.85;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utt);
+}
+
+// ── UTILS ──
+function shuffle(arr) {
+  for (let i = arr.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+// ── MATCHING GAME ──
+let matchSection = 'basic-vowel';
+let matchSelected = null; // { type: 'emoji'|'word', index: number, el: element }
+let matchPairs = [];
+let matchSolved = 0;
+
+function selectMatchSection(el, sec) {
+  document.querySelectorAll('#matching-section-grid .section-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  matchSection = sec;
+}
+
+function startMatching() {
+  let pool = VOCAB.filter(v => v.sec === selectedSection);
+  if (pool.length < 3) { alert('이 범위의 단어가 부족해요!'); return; }
+  matchPairs = shuffle([...pool]).slice(0, 6);
+  matchSolved = 0;
+  matchSelected = null;
+
+  document.getElementById('selector').style.display = 'none';
+  document.getElementById('matching-area').style.display = 'flex';
+  document.getElementById('match-done').style.display = 'none';
+  document.getElementById('match-back-btn').style.display = 'block';
+  renderMatchGame();
+}
+
+function endMatching() {
+  document.getElementById('matching-area').style.display = 'none';
+  document.getElementById('selector').style.display = 'block';
+}
+
+function renderMatchGame() {
+  const leftCol = document.getElementById('match-left');
+  const rightCol = document.getElementById('match-right');
+  leftCol.innerHTML = '';
+  rightCol.innerHTML = '';
+
+  const shuffledWords = shuffle([...matchPairs.map((p,i) => ({...p, idx: i}))]);
+
+  matchPairs.forEach((pair, i) => {
+    const el = document.createElement('div');
+    el.className = 'match-item emoji-item';
+    el.style.flexDirection = 'column';
+    el.style.gap = '2px';
+    const engLabel = pair.label || (pair.e ? pair.e.split('/')[0].trim() : '');
+    el.innerHTML = `<span>${pair.emoji}</span>${engLabel ? `<span class="emoji-caption">(${engLabel})</span>` : ''}`;
+    el.dataset.idx = i;
+    el.dataset.type = 'emoji';
+    el.onclick = () => handleMatchClick(el, 'emoji', i);
+    leftCol.appendChild(el);
+  });
+
+  shuffledWords.forEach((pair) => {
+    const el = document.createElement('div');
+    el.className = 'match-item';
+    el.textContent = pair.w;
+    el.dataset.idx = pair.idx;
+    el.dataset.type = 'word';
+    el.onclick = () => {
+      if (window.speechSynthesis) {
+        const utt = new SpeechSynthesisUtterance(pair.w);
+        utt.lang = 'ko-KR'; utt.rate = 0.85;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utt);
+      }
+      handleMatchClick(el, 'word', pair.idx);
+    };
+    rightCol.appendChild(el);
+  });
+
+  updateMatchScore();
+}
+
+function handleMatchClick(el, type, idx) {
+  if (el.classList.contains('correct')) return;
+
+  if (!matchSelected) {
+    // first selection
+    matchSelected = { type, idx, el };
+    el.classList.add('selected');
+    return;
+  }
+
+  if (matchSelected.el === el) {
+    // deselect same
+    el.classList.remove('selected');
+    matchSelected = null;
+    return;
+  }
+
+  if (matchSelected.type === type) {
+    // same side — switch selection
+    matchSelected.el.classList.remove('selected');
+    matchSelected = { type, idx, el };
+    el.classList.add('selected');
+    return;
+  }
+
+  // different sides — check match
+  const prevEl = matchSelected.el;
+  const prevIdx = matchSelected.idx;
+  matchSelected = null;
+  prevEl.classList.remove('selected');
+
+  if (prevIdx == idx) {
+    // correct!
+    el.classList.add('correct');
+    prevEl.classList.add('correct');
+    matchSolved++;
+    updateMatchScore();
+    if (matchSolved >= matchPairs.length) {
+      setTimeout(showMatchDone, 600);
+    }
+  } else {
+    // wrong
+    el.classList.add('wrong');
+    prevEl.classList.add('wrong');
+    setTimeout(() => {
+      el.classList.remove('wrong');
+      prevEl.classList.remove('wrong');
+    }, 500);
+  }
+}
+
+function updateMatchScore() {
+  document.getElementById('match-score').textContent = `${matchSolved} / ${matchPairs.length}`;
+}
+
+function showMatchDone() {
+  document.getElementById('match-done').style.display = 'flex';
+  document.getElementById('match-back-btn').style.display = 'none';
+  document.getElementById('match-done-text').textContent = `${matchPairs.length}개 모두 맞췄어요! 🌟`;
+}
+
+// ── DRILL DATA ──
+const DRILL_CARDS = [
+  { emoji:'💧', noun:'물', choices:[
+    { verb:'마셔요', particle:'을' },
+    { verb:'끓여요', particle:'이' },
+    { verb:'좋아요', particle:'이' },
+  ]},
+  { emoji:'🐶', noun:'강아지', choices:[
+    { verb:'앉아요', particle:'가' },
+    { verb:'좋아요', particle:'가' },
+    { verb:'없어요', particle:'가' },
+  ]},
+  { emoji:'📚', noun:'책', choices:[
+    { verb:'읽어요', particle:'을' },
+    { verb:'많아요', particle:'이' },
+    { verb:'좋아요', particle:'이' },
+  ]},
+  { emoji:'👶', noun:'아이', choices:[
+    { verb:'웃어요', particle:'가' },
+    { verb:'울어요', particle:'가' },
+    { verb:'자요', particle:'가' },
+  ]},
+  { emoji:'👫', noun:'친구', choices:[
+    { verb:'많아요', particle:'가' },
+    { verb:'없어요', particle:'가' },
+    { verb:'좋아요', particle:'가' },
+  ]},
+  { emoji:'🥛', noun:'우유', choices:[
+    { verb:'마셔요', particle:'를' },
+    { verb:'좋아요', particle:'가' },
+    { verb:'없어요', particle:'가' },
+  ]},
+  { emoji:'🍎', noun:'사과', choices:[
+    { verb:'먹어요', particle:'를' },
+    { verb:'많아요', particle:'가' },
+    { verb:'좋아요', particle:'가' },
+  ]},
+  { emoji:'🐱', noun:'고양이', choices:[
+    { verb:'앉아요', particle:'가' },
+    { verb:'많아요', particle:'가' },
+    { verb:'좋아요', particle:'가' },
+  ]},
+  { emoji:'🌱', noun:'흙', choices:[
+    { verb:'많아요', particle:'이' },
+    { verb:'좋아요', particle:'이' },
+    { verb:'없어요', particle:'이' },
+  ]},
+  { emoji:'🪑', noun:'의자', choices:[
+    { verb:'없어요', particle:'가' },
+    { verb:'많아요', particle:'가' },
+    { verb:'좋아요', particle:'가' },
+  ]},
+  { emoji:'🍳', noun:'요리', choices:[
+    { verb:'해요', particle:'를' },
+    { verb:'좋아요', particle:'가' },
+    { verb:'맛있어요', particle:'가' },
+  ]},
+  { emoji:'🎵', noun:'음악', choices:[
+    { verb:'들어요', particle:'을' },
+    { verb:'좋아요', particle:'이' },
+    { verb:'없어요', particle:'이' },
+  ]},
+  { emoji:'✏️', noun:'연필', choices:[
+    { verb:'써요', particle:'을' },
+    { verb:'없어요', particle:'이' },
+    { verb:'좋아요', particle:'이' },
+  ]},
+  { emoji:'🌸', noun:'꽃', choices:[
+    { verb:'많아요', particle:'이' },
+    { verb:'좋아요', particle:'이' },
+    { verb:'없어요', particle:'이' },
+  ]},
+  { emoji:'👜', noun:'가방', choices:[
+    { verb:'있어요', particle:'이' },
+    { verb:'없어요', particle:'이' },
+    { verb:'좋아요', particle:'이' },
+  ]},
+];
+
+let drillDeck = [];
+let drillIndex = 0;
+let drillSelected = null;
+
+function startDrill() {
+  drillDeck = shuffle([...DRILL_CARDS]);
+  drillIndex = 0;
+  drillSelected = null;
+  document.getElementById('selector').style.display = 'none';
+  document.getElementById('drill-area').style.display = 'flex';
+  showDrillCard();
+}
+
+function showDrillCard() {
+  if (drillIndex >= drillDeck.length) { showDrillDone(); return; }
+  const card = drillDeck[drillIndex];
+  drillSelected = null;
+
+  document.getElementById('drill-emoji').textContent = card.emoji;
+  document.getElementById('drill-noun').textContent = card.noun;
+  document.getElementById('drill-sentence').textContent = '';
+  document.getElementById('drill-speak').classList.remove('show');
+  document.getElementById('drill-next-btn').style.display = 'none';
+
+  // progress
+  const pct = (drillIndex / drillDeck.length) * 100;
+  document.getElementById('drill-prog-fill').style.width = pct + '%';
+  document.getElementById('drill-prog-text').textContent = `${drillIndex+1} / ${drillDeck.length}`;
+
+  // render choices
+  const container = document.getElementById('drill-choices');
+  container.innerHTML = '';
+  card.choices.forEach(choice => {
+    const btn = document.createElement('button');
+    btn.className = 'drill-btn';
+    btn.textContent = choice.verb;
+    btn.onclick = () => selectDrillVerb(btn, card, choice);
+    container.appendChild(btn);
+  });
+}
+
+function selectDrillVerb(btn, card, choice) {
+  // deselect all
+  document.querySelectorAll('.drill-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  drillSelected = choice.verb;
+
+  const sentence = `${card.noun}${choice.particle} ${choice.verb}`;
+  document.getElementById('drill-sentence').textContent = sentence;
+  document.getElementById('drill-speak').classList.add('show');
+  document.getElementById('drill-next-btn').style.display = 'block';
+
+  // TTS
+  if (window.speechSynthesis) {
+    const utt = new SpeechSynthesisUtterance(sentence);
+    utt.lang = 'ko-KR';
+    utt.rate = 0.85;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utt);
+  }
+}
+
+function nextDrill() {
+  drillIndex++;
+  showDrillCard();
+}
+
+function showDrillDone() {
+  document.getElementById('drill-area').style.display = 'none';
+  document.getElementById('done-screen').style.display = 'flex';
+  document.getElementById('done-text').textContent = `말하기 드릴 완료! 수고했어요 🌟`;
+}
+
+function endDrill() {
+  document.getElementById('drill-area').style.display = 'none';
+  document.getElementById('selector').style.display = 'block';
+}
+
+// Init
+document.getElementById('selector').style.display = 'block';
+</script>
+</body>
+</html>
