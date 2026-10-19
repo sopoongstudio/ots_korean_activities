@@ -1,0 +1,152 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>문장 동그라미 확인</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@500;700&display=swap">
+<style>
+/* Layout: concert-ticket sentence cards (colored number stub, perforation, stamp box), ten light-stick segments as the counter */
+:root {
+  --bg: #EEF4FF;
+  --bg-grad: linear-gradient(160deg, #DDF1FF 0%, #ECE7FF 52%, #FFE6F3 100%);
+  --ticket: #FFFFFF;
+  --ink: #1E2A5A;
+  --ink-soft: #4F5FA6;
+  --blue: #2563EB;
+  --head-bg: #FFFFFF;
+  --seg-off: #D5DCF5;
+  --shadow: rgba(60, 70, 140, .18);
+  --stamp-line: #B6C2F0;
+  --font-ko: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-pop: "Jua", "Noto Sans KR", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14163A; --bg-grad: linear-gradient(160deg, #10234A 0%, #1D1A4A 52%, #3A1B46 100%);
+    --ticket: #232657; --ink: #F1F4FF; --ink-soft: #AEB9F5; --blue: #7AA2FF; --head-bg: #232657;
+    --seg-off: #343A78; --shadow: rgba(0, 0, 0, .35); --stamp-line: #5560A8; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14163A; --bg-grad: linear-gradient(160deg, #10234A 0%, #1D1A4A 52%, #3A1B46 100%);
+  --ticket: #232657; --ink: #F1F4FF; --ink-soft: #AEB9F5; --blue: #7AA2FF; --head-bg: #232657;
+  --seg-off: #343A78; --shadow: rgba(0, 0, 0, .35); --stamp-line: #5560A8; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background-color: var(--bg); background-image: var(--bg-grad); background-attachment: fixed;
+  color: var(--ink); font-family: var(--font-ko);
+  padding-block: 22px 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 1000px; margin: 0 auto; display: grid; gap: 20px; }
+header {
+  justify-self: center; max-width: 100%; background: var(--head-bg); border-radius: 999px;
+  padding: 12px 24px; text-align: center; font-weight: 700; font-size: 18px; color: var(--ink);
+  box-shadow: 0 6px 18px var(--shadow); text-wrap: balance;
+}
+header .star { color: #F59E0B; margin-right: 6px; }
+header span { display: block; font-weight: 500; font-size: 14px; color: var(--ink-soft); margin-top: 2px; }
+ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+li { filter: drop-shadow(0 6px 10px var(--shadow)); }
+li:nth-child(1) { --c: #FF5FA8; } li:nth-child(2) { --c: #8B5CF6; } li:nth-child(3) { --c: #0EA5E9; }
+li:nth-child(4) { --c: #10B981; } li:nth-child(5) { --c: #F59E0B; } li:nth-child(6) { --c: #FF5FA8; }
+li:nth-child(7) { --c: #8B5CF6; } li:nth-child(8) { --c: #0EA5E9; } li:nth-child(9) { --c: #10B981; }
+li:nth-child(10) { --c: #F59E0B; }
+label {
+  --stub: 74px; display: grid; grid-template-columns: var(--stub) 1fr 70px; align-items: center; min-height: 86px; cursor: pointer;
+  background: var(--ticket); border-radius: 18px; position: relative;
+  -webkit-mask: radial-gradient(circle 11px at var(--stub) 0, #0000 97%, #000), radial-gradient(circle 11px at var(--stub) 100%, #0000 97%, #000);
+  -webkit-mask-composite: source-in;
+  mask: radial-gradient(circle 11px at var(--stub) 0, #0000 97%, #000), radial-gradient(circle 11px at var(--stub) 100%, #0000 97%, #000);
+  mask-composite: intersect;
+  transition: transform .15s;
+}
+label:hover { transform: translateY(-2px); }
+.stub {
+  align-self: stretch; display: grid; place-items: center; background: var(--c); color: #fff;
+  font-family: var(--font-pop); font-size: 34px; border-radius: 18px 0 0 18px; font-variant-numeric: tabular-nums;
+}
+.ko {
+  padding: 12px 8px 12px 20px; font-size: clamp(19px, 3vw, 25px); font-weight: 700; line-height: 1.35; min-width: 0;
+  overflow-wrap: anywhere; border-left: 3px dotted var(--stamp-line); margin-block: 14px;
+}
+input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.stamp {
+  justify-self: center; width: 46px; height: 46px; border-radius: 50%; border: 3px dashed var(--stamp-line);
+  display: grid; place-items: center; font-size: 26px; color: transparent; transition: transform .2s, background .2s;
+}
+input:checked ~ .stamp { background: var(--c); border: 3px solid var(--c); color: #fff; transform: rotate(-14deg) scale(1.08); }
+label:has(input:checked) .ko { color: var(--ink); }
+label:has(input:checked) { background: color-mix(in srgb, var(--c) 12%, var(--ticket)); }
+input:focus-visible ~ .stamp { outline: 3px solid var(--blue); outline-offset: 3px; }
+footer { display: grid; justify-items: center; gap: 12px; }
+.segs { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.seg { width: 22px; height: 40px; border-radius: 8px; background: var(--seg-off); transition: background .2s, box-shadow .2s; }
+.seg.on { background: var(--c); box-shadow: 0 0 14px var(--c); }
+.count { font-family: var(--font-pop); font-size: 24px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.count b { color: var(--blue); font-size: 34px; font-weight: 400; }
+button {
+  font: inherit; font-weight: 700; font-size: 15px; color: var(--ink-soft); background: var(--head-bg);
+  border: 0; border-radius: 999px; padding: 9px 20px; cursor: pointer; box-shadow: 0 4px 12px var(--shadow);
+}
+button:hover { color: var(--blue); }
+button:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+@media (max-width: 480px) {
+  label { --stub: 60px; grid-template-columns: var(--stub) 1fr 58px; }
+  .stub { font-size: 28px; }
+  .seg { width: 18px; height: 34px; }
+}
+@media (prefers-reduced-motion: reduce) { label, .stamp, .seg { transition: none; } label:hover { transform: none; } }
+</style>
+
+<main>
+  <header><span class="star" aria-hidden="true">★</span>읽어 보고 아는 문장에 체크하세요 <span>Read each sentence and check the ones you know</span></header>
+  <ul id="list">
+    <li><label for="s1"><span class="stub">1</span><span class="ko">배가 고파서 떡볶이를 먹었어요.</span><input type="checkbox" id="s1"><span class="stamp" aria-hidden="true">★</span></label></li>
+    <li><label for="s2"><span class="stub">2</span><span class="ko">저는 불고기를 먹고 싶어요.</span><input type="checkbox" id="s2"><span class="stamp" aria-hidden="true">★</span></label></li>
+    <li><label for="s3"><span class="stub">3</span><span class="ko">이 신발은 예쁘지만 비싸요.</span><input type="checkbox" id="s3"><span class="stamp" aria-hidden="true">★</span></label></li>
+    <li><label for="s4"><span class="stub">4</span><span class="ko">이 신발이 저 신발보다 싸요.</span><input type="checkbox" id="s4"><span class="stamp" aria-hidden="true">★</span></label></li>
+    <li><label for="s5"><span class="stub">5</span><span class="ko">저는 춤을 출 수 있어요.</span><input type="checkbox" id="s5"><span class="stamp" aria-hidden="true">★</span></label></li>
+    <li><label for="s6"><span class="stub">6</span><span class="ko">지금 음악을 듣고 있어요.</span><input type="checkbox" id="s6"><span class="stamp" aria-hidden="true">★</span></label></li>
+    <li><label for="s7"><span class="stub">7</span><span class="ko">밥을 먹기 전에 손을 씻어요.</span><input type="checkbox" id="s7"><span class="stamp" aria-hidden="true">★</span></label></li>
+    <li><label for="s8"><span class="stub">8</span><span class="ko">한국어를 배우려고 한국에 가요.</span><input type="checkbox" id="s8"><span class="stamp" aria-hidden="true">★</span></label></li>
+    <li><label for="s9"><span class="stub">9</span><span class="ko">수업이 끝난 후에 집에 가요.</span><input type="checkbox" id="s9"><span class="stamp" aria-hidden="true">★</span></label></li>
+    <li><label for="s10"><span class="stub">10</span><span class="ko">약을 먹고 푹 쉬세요.</span><input type="checkbox" id="s10"><span class="stamp" aria-hidden="true">★</span></label></li>
+  </ul>
+  <footer>
+    <div class="segs" id="segs" aria-hidden="true"></div>
+    <div class="count" aria-live="polite">아는 문장 <b id="n">0</b> / 10</div>
+    <button type="button" id="reset">다시 하기 · Reset</button>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var items = Array.prototype.slice.call(document.querySelectorAll('#list li'));
+  var boxes = items.map(function (li) { return li.querySelector('input'); });
+  var segWrap = document.getElementById('segs');
+  var segs = items.map(function (li) {
+    var s = document.createElement('i');
+    s.className = 'seg';
+    s.style.setProperty('--c', getComputedStyle(li).getPropertyValue('--c'));
+    segWrap.appendChild(s);
+    return s;
+  });
+  var n = document.getElementById('n');
+  function update() {
+    var count = 0;
+    boxes.forEach(function (b, i) {
+      segs[i].classList.toggle('on', b.checked);
+      if (b.checked) count++;
+    });
+    n.textContent = count;
+  }
+  boxes.forEach(function (b) { b.addEventListener('change', update); });
+  document.getElementById('reset').addEventListener('click', function () {
+    boxes.forEach(function (b) { b.checked = false; });
+    update();
+  });
+})();
+</script>
+
+</body></html>
